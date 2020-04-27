@@ -1,5 +1,6 @@
 package com.example.airquality
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -50,16 +51,20 @@ class MainActivity : AppCompatActivity() {
             val station: Station = parent.getItemAtPosition(position) as Station
             val index: Deferred<String?> = GlobalScope.async { apiClient.getStationIndex(station.Id) }
             val builder = AlertDialog.Builder(this)
-            Log.d("asd", "ASd")
+            val intent = Intent(this, PositionActivity::class.java)
+            intent.putExtra("id", station.Id)
             GlobalScope.launch {
                 val stationIndex = apiClient.getStationIndexData(index.await())
-                builder.setTitle("Data: " + stationIndex.Date)
-                builder.setMessage("Indeks jakości: " + stationIndex.Index)
+                builder.setTitle("Jakość powietrza")
+                builder.setMessage("Data: ${stationIndex.Date} \nIndeks: ${stationIndex.Index}")
 
                 runOnUiThread{
                     builder.setIcon(R.drawable.ic_info_outline_black_24dp)
                     builder.setPositiveButton("OK") { dialog, _ ->
                         dialog.dismiss()
+                    }
+                    builder.setNeutralButton("Czujniki") { dialog, _ ->
+                        startActivity(intent)
                     }
                     builder.show()
                 }
@@ -67,7 +72,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         //Receiver list on screen
-
         val listItems: ArrayList<Station> = arrayListOf()
         val stations: Deferred<String?> = GlobalScope.async { apiClient.getAllStation() }
         GlobalScope.launch{

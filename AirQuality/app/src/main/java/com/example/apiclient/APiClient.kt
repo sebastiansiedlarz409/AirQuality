@@ -1,5 +1,6 @@
 package com.example.apiclient
 
+import com.example.models.Position
 import com.example.models.Station
 import com.example.models.StationIndex
 import okhttp3.*
@@ -10,6 +11,7 @@ class APIClient{
 
     private val urlStation: String = "https://api.gios.gov.pl/pjp-api/rest/station/findAll"
     private val urlStationIndex: String = "https://api.gios.gov.pl/pjp-api/rest/aqindex/getIndex/"
+    private val urlPositions: String = "https://api.gios.gov.pl/pjp-api/rest/station/sensors/"
     private val client = OkHttpClient()
 
     fun getAllStation() : String? {
@@ -69,5 +71,44 @@ class APIClient{
         val index = jsonSubObject.getString("indexLevelName")
 
         return StationIndex(id, date, index)
+    }
+
+    fun getPositions(index: Int): String? {
+
+        if(index == 0){
+            return null
+        }
+
+        val request = Request.Builder()
+            .url(this.urlPositions + index)
+            .build()
+
+        return client.newCall(request).execute().body()?.string()
+    }
+
+    fun getPositionsData(data: String?) : MutableList<Position> {
+
+        val positions: MutableList<Position> = mutableListOf()
+
+        if(data.isNullOrEmpty()){
+            return positions
+        }
+
+        val jsonArray = JSONArray(data)
+        val count: Int = jsonArray.length()
+
+        for(i in 1..count){
+            val jsonObject = jsonArray.getJSONObject(i-1)
+            val id = jsonObject.getInt("id")
+            val stationId = jsonObject.getInt("stationId")
+            val jsonSubObject: JSONObject = jsonObject.getJSONObject("param")
+            val paramName = jsonSubObject.getString("paramName")
+            val paramFormula = jsonSubObject.getString("paramFormula")
+            val paramCode = jsonSubObject.getString("paramCode")
+
+            positions.add(Position(id, stationId, paramName, paramFormula, paramCode))
+        }
+
+        return positions
     }
 }
