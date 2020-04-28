@@ -1,6 +1,7 @@
 package com.example.airquality
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -19,6 +20,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import java.net.URI
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,11 +50,18 @@ class MainActivity : AppCompatActivity() {
         //onclick with popup
         stationList.setOnItemClickListener{
                 parent, _, position, _ ->
+
             val station: Station = parent.getItemAtPosition(position) as Station
             val index: Deferred<String?> = GlobalScope.async { apiClient.getStationIndex(station.Id) }
+
             val builder = AlertDialog.Builder(this)
-            val intent = Intent(this, PositionActivity::class.java)
-            intent.putExtra("id", station.Id)
+
+            val intentPosition = Intent(this, PositionActivity::class.java)
+            intentPosition.putExtra("id", station.Id)
+
+            val urlMaps: Uri = Uri.parse("geo:0,0?q=${station.Lat},${station.Lon}(Czujnik)")
+            val intentMaps = Intent(Intent.ACTION_VIEW, urlMaps)
+
             GlobalScope.launch {
                 val stationIndex = apiClient.getStationIndexData(index.await())
                 builder.setTitle("Jakość powietrza")
@@ -63,7 +72,10 @@ class MainActivity : AppCompatActivity() {
                         dialog.dismiss()
                     }
                     builder.setNeutralButton("Czujniki") { dialog, _ ->
-                        startActivity(intent)
+                        startActivity(intentPosition)
+                    }
+                    builder.setNegativeButton("Mapa") { dialog, _ ->
+                        startActivity(intentMaps)
                     }
                     builder.show()
                 }

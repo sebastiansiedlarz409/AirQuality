@@ -35,6 +35,8 @@ class APIClient{
 
             val id: Int = jsonObject.getInt("id")
             val stationName = jsonObject.getString("stationName")
+            val lat = jsonObject.getString("gegrLat")
+            val lon = jsonObject.getString("gegrLon")
 
             val jsonSubObject: JSONObject = jsonObject.getJSONObject("city")
             val cityId: Int = jsonSubObject.getInt("id")
@@ -45,7 +47,7 @@ class APIClient{
             val districtName: String = jsonSecondSubObject.getString("districtName")
             val provinceName: String = jsonSecondSubObject.getString("provinceName")
 
-            stations.add(Station(id, stationName, cityId, name, communeName, districtName, provinceName))
+            stations.add(Station(id, stationName, cityId, name, communeName, districtName, provinceName, lat, lon))
 
         }
 
