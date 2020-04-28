@@ -57,7 +57,6 @@ class MainActivity : AppCompatActivity() {
                 val stationIndex = apiClient.getStationIndexData(index.await())
                 builder.setTitle("Jakość powietrza")
                 builder.setMessage("Data: ${stationIndex.Date} \nIndeks: ${stationIndex.Index}")
-
                 runOnUiThread{
                     builder.setIcon(R.drawable.ic_info_outline_black_24dp)
                     builder.setPositiveButton("OK") { dialog, _ ->
