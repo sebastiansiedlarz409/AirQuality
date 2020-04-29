@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
+import android.widget.LinearLayout
 import android.widget.TextView
 import com.example.models.Station
 
@@ -27,12 +28,35 @@ class StationAdapter(
         val communeName: TextView = rowView.findViewById(R.id.communeName)
         val districtName: TextView = rowView.findViewById(R.id.districtName)
         val provinceName: TextView = rowView.findViewById(R.id.provinceName)
+        val element: LinearLayout = rowView.findViewById(R.id.stationElement)
 
         stationName.text = filteredData[position].StationName
         cityName.text = filteredData[position].Name
         communeName.text = filteredData[position].CommuneName
         districtName.text = filteredData[position].DistrictName
         provinceName.text = filteredData[position].ProvinceName
+
+        val index: String? = filteredData[position].Index?.Index
+
+        if(index.equals("Bardzo dobry")){
+            element.setBackgroundResource(R.drawable.card_background_vg)
+        }
+        else if(index.equals("Dobry")){
+            element.setBackgroundResource(R.drawable.card_background_g)
+        }
+        else if(index.equals("Umiarkowany")){
+            element.setBackgroundResource(R.drawable.card_background_u)
+        }
+        else if(index.equals("Dostateczny")){
+            element.setBackgroundResource(R.drawable.card_background_c)
+        }
+        else if(index.equals("Zły")){
+            element.setBackgroundResource(R.drawable.card_background_b)
+        }
+        else if(index.equals("Bardzo zły")){
+            element.setBackgroundResource(R.drawable.card_background_vb)
+        }
+
 
         return rowView
     }

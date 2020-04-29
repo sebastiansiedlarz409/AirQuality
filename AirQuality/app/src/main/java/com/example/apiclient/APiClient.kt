@@ -1,8 +1,11 @@
 package com.example.apiclient
 
+import android.util.Log
 import com.example.models.Position
 import com.example.models.Station
 import com.example.models.StationIndex
+import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.IO
 import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -24,7 +27,7 @@ class APIClient{
 
     }
 
-    fun getAllStationList(data: String?) : MutableList<Station> {
+    suspend fun getAllStationList(data: String?) : MutableList<Station> {
 
         val jsonArray = JSONArray(data)
         val count: Int = jsonArray.length()
@@ -48,7 +51,22 @@ class APIClient{
             val provinceName: String = jsonSecondSubObject.getString("provinceName")
 
             stations.add(Station(id, stationName, cityId, name, communeName, districtName, provinceName, lat, lon))
+        }
 
+        //experiment
+        Log.d(count.toString(), "ad")
+        val jobs: MutableList<Deferred<Unit>> = mutableListOf()
+        for(item in stations){
+            val job = CoroutineScope(IO).async {
+                Log.d(item.Id.toString(), "asda")
+                val index: StationIndex = getStationIndexData(getStationIndex(item.Id))
+                item.Index = index
+            }
+            jobs.add(job)
+        }
+
+        jobs.forEach {
+            job -> job.await()
         }
 
         return stations

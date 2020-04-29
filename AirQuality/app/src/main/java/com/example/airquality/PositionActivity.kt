@@ -14,6 +14,8 @@ import kotlinx.android.synthetic.main.activity_position.fab
 import kotlinx.android.synthetic.main.activity_position.toolbar
 import kotlinx.android.synthetic.main.content_position.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
 
 class PositionActivity : AppCompatActivity() {
 
@@ -31,12 +33,12 @@ class PositionActivity : AppCompatActivity() {
         var adapter = PositionAdapter(this, arrayListOf())
         val listItems: ArrayList<Position> = arrayListOf()
 
-        val positons: Deferred<String?> = GlobalScope.async { apiClient.getPositions(intent.getIntExtra("id", 0).toInt()) }
-        GlobalScope.launch{
-            for(item in apiClient.getPositionsData(positons.await())){
+        CoroutineScope(IO).launch{
+            for(item in apiClient.getPositionsData(apiClient.getPositions(intent.getIntExtra("id", 0).toInt()))){
                 listItems.add(item)
             }
-            runOnUiThread{
+
+            withContext(Main){
                 positionsList.adapter = adapter
             }
         }
@@ -44,5 +46,4 @@ class PositionActivity : AppCompatActivity() {
         adapter = PositionAdapter(this, listItems)
         positionsList.adapter = adapter
     }
-
 }

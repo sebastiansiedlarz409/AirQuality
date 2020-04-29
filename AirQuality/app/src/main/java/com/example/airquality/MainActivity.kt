@@ -16,11 +16,9 @@ import com.example.models.Station
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import java.net.URI
+import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
 
 class MainActivity : AppCompatActivity() {
 
@@ -52,9 +50,6 @@ class MainActivity : AppCompatActivity() {
                 parent, _, position, _ ->
 
             val station: Station = parent.getItemAtPosition(position) as Station
-            val index: Deferred<String?> = GlobalScope.async { apiClient.getStationIndex(station.Id) }
-
-            val builder = AlertDialog.Builder(this)
 
             val intentPosition = Intent(this, PositionActivity::class.java)
             intentPosition.putExtra("id", station.Id)
@@ -62,34 +57,35 @@ class MainActivity : AppCompatActivity() {
             val urlMaps: Uri = Uri.parse("geo:0,0?q=${station.Lat},${station.Lon}(Czujnik)")
             val intentMaps = Intent(Intent.ACTION_VIEW, urlMaps)
 
-            GlobalScope.launch {
-                val stationIndex = apiClient.getStationIndexData(index.await())
-                builder.setTitle("Jakość powietrza")
-                builder.setMessage("Data: ${stationIndex.Date} \nIndeks: ${stationIndex.Index}")
-                runOnUiThread{
-                    builder.setIcon(R.drawable.ic_info_outline_black_24dp)
-                    builder.setPositiveButton("OK") { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    builder.setNeutralButton("Czujniki") { dialog, _ ->
-                        startActivity(intentPosition)
-                    }
-                    builder.setNegativeButton("Mapa") { dialog, _ ->
-                        startActivity(intentMaps)
-                    }
-                    builder.show()
-                }
+            val builder = AlertDialog.Builder(this)
+
+            builder.setTitle("Jakość powietrza")
+            builder.setMessage("Data: ${station.Index?.Date} \nIndeks: ${station.Index?.Index}")
+            builder.setIcon(R.drawable.ic_info_outline_black_24dp)
+            builder.setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
             }
+            builder.setNeutralButton("Czujniki") { _, _ ->
+                startActivity(intentPosition)
+            }
+            builder.setNegativeButton("Mapa") { _, _ ->
+                startActivity(intentMaps)
+            }
+            builder.show()
         }
 
         //Receiver list on screen
         val listItems: ArrayList<Station> = arrayListOf()
-        val stations: Deferred<String?> = GlobalScope.async { apiClient.getAllStation() }
-        GlobalScope.launch{
-            for(item in apiClient.getAllStationList(stations.await())){
+
+        CoroutineScope(IO).launch{
+            val data: String? = apiClient.getAllStation()
+            val stationsList: MutableList<Station> = apiClient.getAllStationList(data)
+
+            for(item in stationsList){
                 listItems.add(item)
             }
-            runOnUiThread{
+
+            withContext(Main){
                 listItems.sort()
                 stationList.adapter = adapter
             }
