@@ -1,6 +1,5 @@
 package com.example.apiclient
 
-import android.util.Log
 import com.example.models.Position
 import com.example.models.Station
 import com.example.models.StationIndex
@@ -53,12 +52,9 @@ class APIClient{
             stations.add(Station(id, stationName, cityId, name, communeName, districtName, provinceName, lat, lon))
         }
 
-        //experiment
-        Log.d(count.toString(), "ad")
         val jobs: MutableList<Deferred<Unit>> = mutableListOf()
         for(item in stations){
             val job = CoroutineScope(IO).async {
-                Log.d(item.Id.toString(), "asda")
                 val index: StationIndex = getStationIndexData(getStationIndex(item.Id))
                 item.Index = index
             }

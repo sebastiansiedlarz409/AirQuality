@@ -27,7 +27,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "By Sebastian Siedlarz", Snackbar.LENGTH_LONG).show()
@@ -57,7 +56,7 @@ class MainActivity : AppCompatActivity() {
             val urlMaps: Uri = Uri.parse("geo:0,0?q=${station.Lat},${station.Lon}(Czujnik)")
             val intentMaps = Intent(Intent.ACTION_VIEW, urlMaps)
 
-            val builder = AlertDialog.Builder(this)
+            val builder = AlertDialog.Builder(this, R.style.AirAlert)
 
             builder.setTitle("Jakość powietrza")
             builder.setMessage("Data: ${station.Index?.Date} \nIndeks: ${station.Index?.Index}")
@@ -93,21 +92,5 @@ class MainActivity : AppCompatActivity() {
 
         adapter = StationAdapter(this, listItems)
         stationList.adapter = adapter
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
-        }
     }
 }

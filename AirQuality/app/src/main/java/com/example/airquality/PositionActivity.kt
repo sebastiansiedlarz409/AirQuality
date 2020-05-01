@@ -11,7 +11,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 import kotlinx.android.synthetic.main.activity_position.*
 import kotlinx.android.synthetic.main.activity_position.fab
-import kotlinx.android.synthetic.main.activity_position.toolbar
 import kotlinx.android.synthetic.main.content_position.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
@@ -24,7 +23,6 @@ class PositionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_position)
-        setSupportActionBar(toolbar)
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "By Sebastian Siedlarz", Snackbar.LENGTH_LONG).show()

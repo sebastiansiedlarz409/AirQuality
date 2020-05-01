@@ -17,4 +17,10 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <style name="AirAlert" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorAccent">#D1FF04</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:background">@color/colorBackground</item>
+    </style>
+
 </resources>
