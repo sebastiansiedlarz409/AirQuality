@@ -10,8 +10,9 @@ import org.json.JSONArray
 import org.json.JSONObject
 import ru.gildor.coroutines.okhttp.await
 import java.lang.Exception
+import javax.inject.Inject
 
-class APIClient{
+class APIClient @Inject constructor(){
 
     private val urlStation: String = "https://api.gios.gov.pl/pjp-api/rest/station/findAll"
     private val urlStationIndex: String = "https://api.gios.gov.pl/pjp-api/rest/aqindex/getIndex/"

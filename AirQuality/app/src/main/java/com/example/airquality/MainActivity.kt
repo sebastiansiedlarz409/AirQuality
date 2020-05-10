@@ -5,9 +5,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AlertDialog
+import com.example.DaggerDependencies
 import com.example.apiclient.APIClient
 import com.example.models.Station
 
@@ -16,17 +18,24 @@ import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 
-    private val apiClient: APIClient = APIClient()
+    @Inject
+    lateinit var apiClient: APIClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        DaggerDependencies.create().insertApiClientMainActivity(this)
 
         fab.setOnClickListener { view ->
-            Snackbar.make(view, "By Sebastian Siedlarz", Snackbar.LENGTH_LONG).show()
+            Snackbar.make(view, "By Sebastian Siedlarz", Snackbar.LENGTH_LONG)
+                .setAction("GITHUB", View.OnClickListener {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/sebastiansiedlarz409")))
+                })
+                .show()
         }
 
         var adapter = StationAdapter(this, arrayListOf())
