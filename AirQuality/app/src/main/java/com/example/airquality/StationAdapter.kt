@@ -9,18 +9,18 @@ import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import com.example.models.Station
+import com.example.database.StationIndexEntity
 import java.util.*
 import kotlin.collections.ArrayList
 
 class StationAdapter(
     context: Context,
-    private val data: ArrayList<Station>): BaseAdapter() {
+    private val data: ArrayList<StationIndexEntity>): BaseAdapter() {
 
     private val inflater: LayoutInflater
             = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
-    private var filteredData: ArrayList<Station> = data
+    private var filteredData: ArrayList<StationIndexEntity> = data
 
     @SuppressLint("ViewHolder", "SetTextI18n")
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
@@ -34,9 +34,9 @@ class StationAdapter(
         val element: LinearLayout = rowView.findViewById(R.id.stationElement)
         val icon: ImageView = rowView.findViewById(R.id.icon)
 
-        filteredData[position].ProvinceName = FirstUpperCase(filteredData[position].ProvinceName)
+        filteredData[position].ProvinceName = firstUpperCase(filteredData[position].ProvinceName)
 
-        filteredData[position].DistrictName = FirstUpperCase(filteredData[position].DistrictName)
+        filteredData[position].DistrictName = firstUpperCase(filteredData[position].DistrictName)
 
         stationName.text = filteredData[position].StationName
         cityName.text = filteredData[position].Name
@@ -44,40 +44,42 @@ class StationAdapter(
         districtName.text = "Powiat: ${filteredData[position].DistrictName}"
         provinceName.text = "Województwo: ${filteredData[position].ProvinceName}"
 
-        val index: String? = filteredData[position].Index?.Index
+        val index: String? = filteredData[position].Index
 
-        if(index.equals("Bardzo dobry")){
-            element.setBackgroundResource(R.drawable.card_background_vg)
-            icon.setImageResource(R.drawable.very_good)
-        }
-        else if(index.equals("Dobry")){
-            element.setBackgroundResource(R.drawable.card_background_g)
-            icon.setImageResource(R.drawable.good)
-        }
-        else if(index.equals("Umiarkowany")){
-            element.setBackgroundResource(R.drawable.card_background_u)
-            icon.setImageResource(R.drawable.um)
-        }
-        else if(index.equals("Dostateczny")){
-            element.setBackgroundResource(R.drawable.card_background_c)
-            icon.setImageResource(R.drawable.com)
-        }
-        else if(index.equals("Zły")){
-            element.setBackgroundResource(R.drawable.card_background_b)
-            icon.setImageResource(R.drawable.bad)
-        }
-        else if(index.equals("Bardzo zły")){
-            element.setBackgroundResource(R.drawable.card_background_vb)
-            icon.setImageResource(R.drawable.very_bad)
+        when {
+            index.equals("Bardzo dobry") -> {
+                element.setBackgroundResource(R.drawable.card_background_vg)
+                icon.setImageResource(R.drawable.very_good)
+            }
+            index.equals("Dobry") -> {
+                element.setBackgroundResource(R.drawable.card_background_g)
+                icon.setImageResource(R.drawable.good)
+            }
+            index.equals("Umiarkowany") -> {
+                element.setBackgroundResource(R.drawable.card_background_u)
+                icon.setImageResource(R.drawable.um)
+            }
+            index.equals("Dostateczny") -> {
+                element.setBackgroundResource(R.drawable.card_background_c)
+                icon.setImageResource(R.drawable.com)
+            }
+            index.equals("Zły") -> {
+                element.setBackgroundResource(R.drawable.card_background_b)
+                icon.setImageResource(R.drawable.bad)
+            }
+            index.equals("Bardzo zły") -> {
+                element.setBackgroundResource(R.drawable.card_background_vb)
+                icon.setImageResource(R.drawable.very_bad)
+            }
         }
 
         return rowView
     }
 
-    private fun FirstUpperCase(value: String): String{
+    private fun firstUpperCase(value: String): String{
         val temp: List<String> = value.split(" ")
 
-        var result: String = ""
+        var result = ""
         for(item in temp){
             val size: Int = item.length
             result += item[0].toUpperCase() + item.substring(1, size).toLowerCase(Locale.ROOT)
@@ -87,7 +89,7 @@ class StationAdapter(
         return result.trim()
     }
 
-    override fun getItem(position: Int): Station {
+    override fun getItem(position: Int): StationIndexEntity {
         return filteredData[position]
     }
 
@@ -102,7 +104,7 @@ class StationAdapter(
     fun filter(search: CharSequence?){
         val toSearch: String = search.toString().toLowerCase(Locale.ROOT)
 
-        val filtered: ArrayList<Station> = arrayListOf()
+        val filtered: ArrayList<StationIndexEntity> = arrayListOf()
         if(toSearch.isEmpty()){
             filteredData = data
             notifyDataSetChanged()
@@ -111,7 +113,7 @@ class StationAdapter(
         val count: Int = data.size - 1
 
         for(i in 0..count){
-            val item: Station = data[i]
+            val item: StationIndexEntity = data[i]
             if(item.Name.toLowerCase(Locale.ROOT).contains(toSearch)){
                 filtered.add(item)
             }

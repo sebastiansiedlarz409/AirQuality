@@ -1,40 +1,53 @@
 package com.example.airquality
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.View
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AlertDialog
+import androidx.room.Room
 import com.example.DaggerDependencies
 import com.example.apiclient.APIClient
-import com.example.models.Station
-
+import com.example.database.DataBase
+import com.example.database.StationIndexEntity
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import java.util.*
 import javax.inject.Inject
+import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var apiClient: APIClient
+    private lateinit var db: DataBase
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         DaggerDependencies.create().insertApiClientMainActivity(this)
 
+        sharedPreferences = getSharedPreferences("AiqQualitySP", Context.MODE_PRIVATE)
+
+        db = Room.databaseBuilder(
+            this,
+            DataBase::class.java, "AirQualityDb"
+        ).build()
+
         fab.setOnClickListener { view ->
             Snackbar.make(view, "By Sebastian Siedlarz", Snackbar.LENGTH_LONG)
-                .setAction("GITHUB", View.OnClickListener {
+                .setAction("GITHUB") {
                     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/sebastiansiedlarz409")))
-                })
+                }
                 .show()
         }
 
@@ -54,10 +67,10 @@ class MainActivity : AppCompatActivity() {
         stationList.setOnItemClickListener{
                 parent, _, position, _ ->
 
-            val station: Station = parent.getItemAtPosition(position) as Station
+            val station: StationIndexEntity = parent.getItemAtPosition(position) as StationIndexEntity
 
             val intentPosition = Intent(this, PositionActivity::class.java)
-            intentPosition.putExtra("id", station.Id)
+            intentPosition.putExtra("id", station.StationId)
 
             val urlMaps: Uri = Uri.parse("geo:0,0?q=${station.Lat},${station.Lon}(Czujnik)")
             val intentMaps = Intent(Intent.ACTION_VIEW, urlMaps)
@@ -65,7 +78,7 @@ class MainActivity : AppCompatActivity() {
             val builder = AlertDialog.Builder(this, R.style.AirAlert)
 
             builder.setTitle("Jakość powietrza")
-            builder.setMessage("Data: ${station.Index?.Date} \nIndeks: ${station.Index?.Index}")
+            builder.setMessage("Data: ${station.Date} \nIndeks: ${station.Index}")
             builder.setIcon(R.drawable.ic_info_outline_black_24dp)
             builder.setPositiveButton("OK") { dialog, _ ->
                 dialog.dismiss()
@@ -80,23 +93,50 @@ class MainActivity : AppCompatActivity() {
         }
 
         //Receiver list on screen
-        val listItems: ArrayList<Station> = arrayListOf()
+        val listItems: ArrayList<StationIndexEntity> = arrayListOf()
 
-        CoroutineScope(IO).launch{
-            val data: String? = apiClient.getAllStation()
-            val stationsList: MutableList<Station> = apiClient.getAllStationList(data)
-
-            for(item in stationsList){
-                listItems.add(item)
+        CoroutineScope(Dispatchers.Default).launch {
+            if(sharedPreferences.getLong("lastStationRefreshTime", 0) == 0.toLong()){
+                refreshStationIndex()
+            }
+            else{
+                val diff = Date().time - sharedPreferences.getLong("lastStationRefreshTime", 0)
+                if(Date(diff).time / 60000 > 60){
+                    refreshStationIndex()
+                }
             }
 
+            val stations = db.stationIndexDao().getAll()
+
+            for(item in stations){
+                listItems.add(item)
+            }
+            listItems.sort()
+
             withContext(Main){
-                listItems.sort()
+                adapter = StationAdapter(this@MainActivity, listItems)
                 stationList.adapter = adapter
             }
         }
 
         adapter = StationAdapter(this, listItems)
         stationList.adapter = adapter
+    }
+
+    private suspend fun refreshStationIndex() {
+        val refreshStationDb: Deferred<Unit> = CoroutineScope(IO).async{
+            val data: String? = apiClient.getAllStation()
+            val stationsList: MutableList<StationIndexEntity> = apiClient.getAllStationList(data)
+
+            db.stationIndexDao().deleteAll()
+
+            for(item in stationsList){
+                db.stationIndexDao().insert(item)
+            }
+
+            sharedPreferences.edit().putLong("lastStationRefreshTime", Date().time).apply()
+        }
+
+        refreshStationDb.await()
     }
 }

@@ -1,8 +1,7 @@
 package com.example.apiclient
 
-import com.example.models.Position
-import com.example.models.Station
-import com.example.models.StationIndex
+import com.example.database.PositionEntity
+import com.example.database.StationIndexEntity
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import okhttp3.*
@@ -27,15 +26,15 @@ class APIClient @Inject constructor(){
 
         val response: Response = client.newCall(request).await()
 
-        return withContext(Dispatchers.IO) { response.body()?.string() }
+        return withContext(IO) { response.body()?.string() }
 
     }
 
-    suspend fun getAllStationList(data: String?) : MutableList<Station> {
+    suspend fun getAllStationList(data: String?) : MutableList<StationIndexEntity> {
 
         val jsonArray = JSONArray(data)
         val count: Int = jsonArray.length()
-        val stations: MutableList<Station> = mutableListOf()
+        val stations: MutableList<StationIndexEntity> = mutableListOf()
 
         for(i in 1..count){
             val jsonObject: JSONObject = jsonArray.getJSONObject(i-1)
@@ -54,15 +53,15 @@ class APIClient @Inject constructor(){
             val districtName: String = jsonSecondSubObject.getString("districtName")
             val provinceName: String = jsonSecondSubObject.getString("provinceName")
 
-            stations.add(Station(id, stationName, cityId, name, communeName, districtName, provinceName, lat, lon))
-
+            stations.add(StationIndexEntity(id, stationName, cityId, name, communeName, districtName, provinceName, lat, lon, "", ""))
         }
 
         val jobs: MutableList<Deferred<Unit>> = mutableListOf()
         for(item in stations){
             val job = CoroutineScope(IO).async {
-                val index: StationIndex = getStationIndexData(getStationIndex(item.Id))
-                item.Index = index
+                val temp: Pair<String, String> = getStationIndexData(getStationIndex(item))
+                item.Date = temp.first
+                item.Index = temp.second
             }
             jobs.add(job)
         }
@@ -72,32 +71,31 @@ class APIClient @Inject constructor(){
         return stations
     }
 
-    suspend fun getStationIndex(index: Int): String? {
+    private suspend fun getStationIndex(station: StationIndexEntity): String? {
 
         client.dispatcher().maxRequests = 90
         client.dispatcher().maxRequestsPerHost = 90
 
         val request = Request.Builder()
-            .url(this.urlStationIndex + index)
+            .url(this.urlStationIndex + station.StationId)
             .build()
 
         val response: Response = client.newCall(request).await()
 
-        return withContext(Dispatchers.IO) { response.body()?.string() }
+        return withContext(IO) { response.body()?.string() }
 
     }
 
-    fun getStationIndexData(data: String?) : StationIndex {
+    private fun getStationIndexData(data: String?): Pair<String, String> {
         try{
             val jsonObject = JSONObject(data)
-            val id = jsonObject.getInt("id")
             val date = jsonObject.getString("stCalcDate")
             val jsonSubObject: JSONObject = jsonObject.getJSONObject("stIndexLevel")
             val index = jsonSubObject.getString("indexLevelName")
-            return StationIndex(id, date, index)
+            return Pair(date,index)
         }
         catch (ex: Exception) {}
-        return StationIndex(-10, "", "Błąd pobierania")
+        return Pair("Brak danych","Brak indexu")
     }
 
     suspend fun getPositions(index: Int): String? {
@@ -112,12 +110,12 @@ class APIClient @Inject constructor(){
 
         val response: Response = client.newCall(request).await()
 
-        return withContext(Dispatchers.IO) { response.body()?.string() }
+        return withContext(IO) { response.body()?.string() }
     }
 
-    fun getPositionsData(data: String?) : MutableList<Position> {
+    fun getPositionsData(data: String?) : MutableList<PositionEntity> {
 
-        val positions: MutableList<Position> = mutableListOf()
+        val positions: MutableList<PositionEntity> = mutableListOf()
 
         if(data.isNullOrEmpty()){
             return positions
@@ -128,14 +126,13 @@ class APIClient @Inject constructor(){
 
         for(i in 1..count){
             val jsonObject = jsonArray.getJSONObject(i-1)
-            val id = jsonObject.getInt("id")
             val stationId = jsonObject.getInt("stationId")
             val jsonSubObject: JSONObject = jsonObject.getJSONObject("param")
             val paramName = jsonSubObject.getString("paramName")
             val paramFormula = jsonSubObject.getString("paramFormula")
             val paramCode = jsonSubObject.getString("paramCode")
 
-            positions.add(Position(id, stationId, paramName, paramFormula, paramCode))
+            positions.add(PositionEntity(stationId, paramName, paramFormula, paramCode))
         }
 
         return positions
