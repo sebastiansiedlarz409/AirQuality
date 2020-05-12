@@ -20,6 +20,7 @@ import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
@@ -42,6 +43,11 @@ class MainActivity : AppCompatActivity() {
             this,
             DataBase::class.java, "AirQualityDb"
         ).build()
+
+        lastUpdate.text = if (sharedPreferences.getLong("lastStationRefreshTime", 0) == 0.toLong())
+            "Odświeżono: NIE"
+        else
+            "Odświeżono: ${SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(sharedPreferences.getLong("lastStationRefreshTime", 0))}"
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "By Sebastian Siedlarz", Snackbar.LENGTH_LONG)

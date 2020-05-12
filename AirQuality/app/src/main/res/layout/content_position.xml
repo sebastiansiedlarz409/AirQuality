@@ -27,6 +27,7 @@
             android:text="Czujniki" />
 
         <TextView
+            android:id="@+id/lastUpdatePosition"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
@@ -36,7 +37,7 @@
             android:textColor="#FFFFFF"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:text="Lista czujników oraz ich parametry" />
+            android:text="Data aktualizacji" />
 
         <ListView
             android:id="@+id/positionsList"

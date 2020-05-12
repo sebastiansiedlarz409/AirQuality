@@ -17,6 +17,7 @@ import kotlinx.android.synthetic.main.content_position.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
@@ -40,6 +41,11 @@ class PositionActivity : AppCompatActivity() {
             DataBase::class.java, "AirQualityDb"
         ).build()
 
+        lastUpdatePosition.text = if (sharedPreferences.getLong("lastPositionRefreshTime${intent.getIntExtra("id", 0)}", 0) == 0.toLong())
+            "Odświeżono: NIE"
+        else
+            "Odświeżono: ${SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(sharedPreferences.getLong("lastPositionRefreshTime${intent.getIntExtra("id", 0)}", 0))}"
+
         fab.setOnClickListener { view ->
             Snackbar.make(view, "By Sebastian Siedlarz", Snackbar.LENGTH_LONG)
                 .setAction("GITHUB") {
@@ -52,17 +58,17 @@ class PositionActivity : AppCompatActivity() {
         val listItems: ArrayList<PositionEntity> = arrayListOf()
 
         CoroutineScope(Dispatchers.Default).launch {
-            if(sharedPreferences.getLong("lastPositionRefreshTime", 0) == 0.toLong()){
+            if(sharedPreferences.getLong("lastPositionRefreshTime${intent.getIntExtra("id", 0)}", 0) == 0.toLong()){
                 refreshPosition()
             }
             else{
-                val diff = Date().time - sharedPreferences.getLong("lastPositionRefreshTime", 0)
+                val diff = Date().time - sharedPreferences.getLong("lastPositionRefreshTime${intent.getIntExtra("id", 0)}", 0)
                 if(Date(diff).time / 60000 > 1440){
                     refreshPosition()
                 }
             }
 
-            val positions = db.positionDao().getAll()
+            val positions = db.positionDao().getAllById(intent.getIntExtra("id", 0))
 
             for(item in positions){
                 listItems.add(item)
@@ -83,13 +89,13 @@ class PositionActivity : AppCompatActivity() {
             val positions: MutableList<PositionEntity>
                     = apiClient.getPositionsData(apiClient.getPositions(intent.getIntExtra("id", 0)))
 
-            db.positionDao().deleteAll()
+            db.positionDao().deleteAll(intent.getIntExtra("id", 0))
 
             for(item in positions){
                 db.positionDao().insert(item)
             }
 
-            sharedPreferences.edit().putLong("lastPositionRefreshTime", Date().time).apply()
+            sharedPreferences.edit().putLong("lastPositionRefreshTime${intent.getIntExtra("id", 0)}", Date().time).apply()
         }
 
         refreshPositionDb.await()

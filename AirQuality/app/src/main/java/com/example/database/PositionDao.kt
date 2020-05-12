@@ -6,12 +6,12 @@ import androidx.room.Query
 
 @Dao
 interface PositionDao {
-    @Query("SELECT * FROM PositionEntity")
-    fun getAll(): MutableList<PositionEntity>
+    @Query("SELECT * FROM PositionEntity WHERE StationId LIKE :id")
+    fun getAllById(id: Int): MutableList<PositionEntity>
 
     @Insert
     fun insert(positionEntity: PositionEntity)
 
-    @Query("DELETE FROM PositionEntity")
-    fun deleteAll()
+    @Query("DELETE FROM PositionEntity WHERE StationId LIKE :id")
+    fun deleteAll(id: Int)
 }
