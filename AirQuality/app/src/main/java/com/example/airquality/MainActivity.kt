@@ -39,15 +39,9 @@ class MainActivity : AppCompatActivity() {
 
         sharedPreferences = getSharedPreferences("AiqQualitySP", Context.MODE_PRIVATE)
 
-        db = Room.databaseBuilder(
-            this,
-            DataBase::class.java, "AirQualityDb"
-        ).build()
+        db = DataBase.getDbInstance(this)
 
-        lastUpdate.text = if (sharedPreferences.getLong("lastStationRefreshTime", 0) == 0.toLong())
-            "Odświeżono: NIE"
-        else
-            "Odświeżono: ${SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(sharedPreferences.getLong("lastStationRefreshTime", 0))}"
+        setLastUpdate()
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "By Sebastian Siedlarz", Snackbar.LENGTH_LONG)
@@ -104,11 +98,13 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.Default).launch {
             if(sharedPreferences.getLong("lastStationRefreshTime", 0) == 0.toLong()){
                 refreshStationIndex()
+                setLastUpdate()
             }
             else{
                 val diff = Date().time - sharedPreferences.getLong("lastStationRefreshTime", 0)
                 if(Date(diff).time / 60000 > 60){
                     refreshStationIndex()
+                    setLastUpdate()
                 }
             }
 
@@ -144,5 +140,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         refreshStationDb.await()
+    }
+
+    private fun setLastUpdate(){
+        lastUpdate.text = if (sharedPreferences.getLong("lastStationRefreshTime", 0) == 0.toLong())
+            "Odświeżono: NIE"
+        else
+            "Odświeżono: ${SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(sharedPreferences.getLong("lastStationRefreshTime", 0))}"
     }
 }
