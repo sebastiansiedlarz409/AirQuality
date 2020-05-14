@@ -7,10 +7,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AlertDialog
-import androidx.room.Room
 import com.example.DaggerDependencies
 import com.example.apiclient.APIClient
 import com.example.database.DataBase
@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
 
         db = DataBase.getDbInstance(this)
 
-        setLastUpdate()
+        refreshLastUpdate()
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "By Sebastian Siedlarz", Snackbar.LENGTH_LONG)
@@ -50,6 +50,8 @@ class MainActivity : AppCompatActivity() {
                 }
                 .show()
         }
+
+        progress.visibility = View.GONE
 
         var adapter = StationAdapter(this, arrayListOf())
 
@@ -98,13 +100,13 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.Default).launch {
             if(sharedPreferences.getLong("lastStationRefreshTime", 0) == 0.toLong()){
                 refreshStationIndex()
-                setLastUpdate()
+                refreshLastUpdate()
             }
             else{
                 val diff = Date().time - sharedPreferences.getLong("lastStationRefreshTime", 0)
                 if(Date(diff).time / 60000 > 60){
                     refreshStationIndex()
-                    setLastUpdate()
+                    refreshLastUpdate()
                 }
             }
 
@@ -127,6 +129,10 @@ class MainActivity : AppCompatActivity() {
 
     private suspend fun refreshStationIndex() {
         val refreshStationDb: Deferred<Unit> = CoroutineScope(IO).async{
+            withContext(Main){
+                progress.visibility = View.VISIBLE
+            }
+
             val data: String? = apiClient.getAllStation()
             val stationsList: MutableList<StationIndexEntity> = apiClient.getAllStationList(data)
 
@@ -140,9 +146,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         refreshStationDb.await()
+
+        withContext(Main){
+            progress.visibility = View.GONE
+        }
     }
 
-    private fun setLastUpdate(){
+    private fun refreshLastUpdate(){
         lastUpdate.text = if (sharedPreferences.getLong("lastStationRefreshTime", 0) == 0.toLong())
             "Odświeżono: NIE"
         else

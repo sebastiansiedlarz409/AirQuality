@@ -5,15 +5,16 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.room.Room
 import com.example.DaggerDependencies
 import com.example.apiclient.APIClient
 import com.example.database.DataBase
 import com.example.database.PositionEntity
 import kotlinx.android.synthetic.main.activity_position.fab
 import kotlinx.android.synthetic.main.content_position.*
+import kotlinx.android.synthetic.main.content_position.progress
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
@@ -37,6 +38,8 @@ class PositionActivity : AppCompatActivity() {
         sharedPreferences = getSharedPreferences("AiqQualitySP", Context.MODE_PRIVATE)
 
         db = DataBase.getDbInstance(this)
+
+        progress.visibility = View.GONE
 
         refreshLastUpdate()
 
@@ -82,6 +85,9 @@ class PositionActivity : AppCompatActivity() {
 
     private suspend fun refreshPosition(){
         val refreshPositionDb: Deferred<Unit> = CoroutineScope(IO).async{
+            withContext(Main){
+                progress.visibility = View.VISIBLE
+            }
             val positions: MutableList<PositionEntity>
                     = apiClient.getPositionsData(apiClient.getPositions(intent.getIntExtra("id", 0)))
 
@@ -95,6 +101,10 @@ class PositionActivity : AppCompatActivity() {
         }
 
         refreshPositionDb.await()
+
+        withContext(Main){
+            progress.visibility = View.GONE
+        }
     }
 
     private fun refreshLastUpdate(){
