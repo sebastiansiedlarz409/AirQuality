@@ -1,5 +1,12 @@
 # AirQuality
-Just for fun
+Simple android app showing air quality in Poland. It's written for fun and to learn a new language.
+
+## Technologies
+
+* Kotlin
+* Kotlin-Coroutines
+* REST API
+* okhttp3
 
 Data source: https://powietrze.gios.gov.pl/pjp/content/api
 
