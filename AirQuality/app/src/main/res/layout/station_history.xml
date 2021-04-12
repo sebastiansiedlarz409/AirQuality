@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="10dp"
+        android:elevation="6dp"
+        tools:ignore="MissingConstraints"
+        card_view:cardCornerRadius="8dp">
+
+        <LinearLayout
+            android:id="@+id/stationElement"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:padding="10dp"
+            android:paddingStart="15dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="3">
+
+                <LinearLayout
+                    android:layout_height="wrap_content"
+                    android:layout_width="280dp"
+                    android:layout_weight="2"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/cityName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="6dp"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:textSize="25sp"
+                        android:textColor="#FFFFFF"
+                        android:textStyle="bold"
+                        android:text="City Name"/>
+
+                    <TextView
+                        android:id="@+id/stationName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:textSize="20sp"
+                        android:textColor="#FFFFFF"
+                        android:text="StationName"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_weight="1">
+
+                    <ImageView
+                        android:id="@+id/icon"
+                        android:layout_width="100dp"
+                        android:layout_height="60dp"
+                        android:layout_gravity="right"
+                        android:src="@drawable/noindex"
+                        tools:ignore="NestedWeights">
+
+                    </ImageView>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/measureTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textColor="#FFFFFF"
+                android:text="communeName"/>
+
+            <TextView
+                android:id="@+id/readTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textColor="#FFFFFF"
+                android:text="districtName"/>
+
+            <TextView
+                android:id="@+id/index"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:textSize="16sp"
+                android:singleLine="true"
+                android:textColor="#FFFFFF"
+                android:text="provinceName"/>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

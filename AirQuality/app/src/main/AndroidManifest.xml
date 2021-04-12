@@ -12,9 +12,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".StationHistoryActivity"
+            android:label="@string/title_activity_station_history"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
             android:name=".PositionActivity"
             android:label="@string/title_activity_position"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"

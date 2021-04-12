@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog
 import com.example.DaggerDependencies
 import com.example.apiclient.APIClient
 import com.example.database.DataBase
+import com.example.database.StationHistoryEntity
 import com.example.database.StationIndexEntity
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -77,13 +78,18 @@ class MainActivity : AppCompatActivity() {
             val urlMaps: Uri = Uri.parse("geo:0,0?q=${station.Lat},${station.Lon}(Czujnik)")
             val intentMaps = Intent(Intent.ACTION_VIEW, urlMaps)
 
+            val intentHistory = Intent(this, StationHistoryActivity::class.java)
+            intentHistory.putExtra("id", station.StationId)
+            intentHistory.putExtra("lastUpdate", lastUpdate.text)
+
             val builder = AlertDialog.Builder(this, R.style.AirAlert)
 
             builder.setTitle("Jakość powietrza")
             builder.setMessage("Data: ${station.Date} \nIndeks: ${station.Index}")
             builder.setIcon(R.drawable.ic_info_outline_black_24dp)
             builder.setPositiveButton("OK") { dialog, _ ->
-                dialog.dismiss()
+                //dialog.dismiss()
+                startActivity(intentHistory)
             }
             builder.setNeutralButton("Czujniki") { _, _ ->
                 startActivity(intentPosition)
@@ -140,6 +146,10 @@ class MainActivity : AppCompatActivity() {
 
             for(item in stationsList){
                 db.stationIndexDao().insert(item)
+            }
+
+            for(item in stationsList){
+                db.stationHistoryDao().insert(StationHistoryEntity(item.StationId, item.StationName, item.Name, item.Date, item.Index, Date().time))
             }
 
             sharedPreferences.edit().putLong("lastStationRefreshTime", Date().time).apply()
