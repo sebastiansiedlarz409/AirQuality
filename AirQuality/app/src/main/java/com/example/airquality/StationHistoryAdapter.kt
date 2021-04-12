@@ -10,6 +10,10 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.example.database.StationHistoryEntity
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -34,15 +38,15 @@ class StationHistoryAdapter(
         val element: LinearLayout = rowView.findViewById(R.id.stationElement)
         val icon: ImageView = rowView.findViewById(R.id.icon)
 
-        //filteredData[position].ProvinceName = firstUpperCase(filteredData[position].ProvinceName)
-
-        //filteredData[position].DistrictName = firstUpperCase(filteredData[position].DistrictName)
-
         stationName.text = filteredData[position].StationName
         cityName.text = filteredData[position].Name
         measureTime.text = "Pomiar: ${filteredData[position].Date}"
-        readTime.text = "Odczyt: ${filteredData[position].ReadTime}"
         idx.text = "Indeks: ${filteredData[position].Index}"
+
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        val instant = Instant.ofEpochMilli(filteredData[position].ReadTime)
+        val date = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+        readTime.text = "Odczyt: ${formatter.format(date)}"
 
         val index: String? = filteredData[position].Index
 
