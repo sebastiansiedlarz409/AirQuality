@@ -8,23 +8,24 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import com.google.android.material.snackbar.Snackbar
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import com.example.DaggerDependencies
 import com.example.apiclient.APIClient
 import com.example.database.DataBase
 import com.example.database.StationHistoryEntity
 import com.example.database.StationIndexEntity
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.info_popup.view.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
-import kotlin.collections.ArrayList
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -82,22 +83,30 @@ class MainActivity : AppCompatActivity() {
             intentHistory.putExtra("id", station.StationId)
             intentHistory.putExtra("lastUpdate", lastUpdate.text)
 
-            val builder = AlertDialog.Builder(this, R.style.AirAlert)
+            val inflater = layoutInflater
+            val popup = inflater.inflate(R.layout.info_popup, findViewById(R.id.root))
 
-            builder.setTitle("Jakość powietrza")
-            builder.setMessage("Data: ${station.Date} \nIndeks: ${station.Index}")
-            builder.setIcon(R.drawable.ic_info_outline_black_24dp)
-            builder.setPositiveButton("OK") { dialog, _ ->
-                //dialog.dismiss()
-                startActivity(intentHistory)
-            }
-            builder.setNeutralButton("Czujniki") { _, _ ->
-                startActivity(intentPosition)
-            }
-            builder.setNegativeButton("Mapa") { _, _ ->
+            popup.date.text = "Data: " + station.Date
+            popup.index.text = "Indeks: " + station.Index
+
+            val builder = AlertDialog.Builder(this)
+
+            popup.map.setOnClickListener {
                 startActivity(intentMaps)
             }
-            builder.show()
+            popup.sensors.setOnClickListener {
+                startActivity(intentPosition)
+            }
+            popup.history.setOnClickListener {
+                startActivity(intentHistory)
+            }
+
+            builder.setView(popup);
+            var dialog = builder.show();
+
+            popup.ok.setOnClickListener {
+                dialog.dismiss()
+            }
         }
 
         //Receiver list on screen
