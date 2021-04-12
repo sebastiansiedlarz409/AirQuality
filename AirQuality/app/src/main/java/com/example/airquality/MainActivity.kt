@@ -3,6 +3,8 @@ package com.example.airquality
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
@@ -10,6 +12,7 @@ import android.text.TextWatcher
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.example.DaggerDependencies
 import com.example.apiclient.APIClient
 import com.example.database.DataBase
@@ -18,6 +21,7 @@ import com.example.database.StationIndexEntity
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.info_popup.*
 import kotlinx.android.synthetic.main.info_popup.view.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
@@ -91,21 +95,46 @@ class MainActivity : AppCompatActivity() {
 
             val builder = AlertDialog.Builder(this)
 
-            popup.map.setOnClickListener {
-                startActivity(intentMaps)
-            }
-            popup.sensors.setOnClickListener {
-                startActivity(intentPosition)
-            }
-            popup.history.setOnClickListener {
-                startActivity(intentHistory)
-            }
-
             builder.setView(popup);
             var dialog = builder.show();
 
+            popup.setBackgroundColor(ContextCompat.getColor(this, android.R.color.transparent));
+
+            popup.map.setOnClickListener {
+                dialog.dismiss()
+                startActivity(intentMaps)
+            }
+            popup.sensors.setOnClickListener {
+                dialog.dismiss()
+                startActivity(intentPosition)
+            }
+            popup.history.setOnClickListener {
+                dialog.dismiss()
+                startActivity(intentHistory)
+            }
             popup.ok.setOnClickListener {
                 dialog.dismiss()
+            }
+
+            when {
+                station.Index.equals("Bardzo dobry") -> {
+                    popup.pop.setBackgroundResource(R.drawable.card_background_vg)
+                }
+                station.Index.equals("Dobry") -> {
+                    popup.pop.setBackgroundResource(R.drawable.card_background_g)
+                }
+                station.Index.equals("Umiarkowany") -> {
+                    popup.pop.setBackgroundResource(R.drawable.card_background_u)
+                }
+                station.Index.equals("Dostateczny") -> {
+                    popup.pop.setBackgroundResource(R.drawable.card_background_c)
+                }
+                station.Index.equals("Zły") -> {
+                    popup.pop.setBackgroundResource(R.drawable.card_background_b)
+                }
+                station.Index.equals("Bardzo zły") -> {
+                    popup.pop.setBackgroundResource(R.drawable.card_background_vb)
+                }
             }
         }
 
