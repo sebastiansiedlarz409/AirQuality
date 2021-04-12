@@ -5,14 +5,19 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import com.example.database.DataBase
 import com.example.database.StationHistoryEntity
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.activity_station_history.*
 import kotlinx.android.synthetic.main.content_station_history.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.*
 
 class StationHistoryActivity : AppCompatActivity() {
 
@@ -22,11 +27,13 @@ class StationHistoryActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_station_history)
-        setSupportActionBar(findViewById(R.id.toolbar))
 
         sharedPreferences = getSharedPreferences("AiqQualitySP", Context.MODE_PRIVATE)
 
         db = DataBase.getDbInstance(this)
+
+        lastUpdate.text = intent.getStringExtra("lastUpdate")
+        progress.visibility = View.GONE
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "By Sebastian Siedlarz", Snackbar.LENGTH_LONG)
@@ -36,8 +43,15 @@ class StationHistoryActivity : AppCompatActivity() {
                 .show()
         }
 
-        var stationHistory : MutableList<StationHistoryEntity> = db.stationHistoryDao().getAll(intent.getIntExtra("id", 0))
-        var adapter = StationHistoryAdapter(this, stationHistory)
-        stationHistoryList.adapter = adapter
+        var stationHistory: MutableList<StationHistoryEntity> = arrayListOf()
+
+        CoroutineScope(Dispatchers.Default).launch {
+            stationHistory = db.stationHistoryDao().getAll(intent.getIntExtra("id", 0))
+
+            withContext(Dispatchers.Main){
+                var adapter = StationHistoryAdapter(this@StationHistoryActivity, stationHistory)
+                stationHistoryList.adapter = adapter
+            }
+        }
     }
 }
