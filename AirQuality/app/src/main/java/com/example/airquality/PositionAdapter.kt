@@ -26,9 +26,11 @@ class PositionAdapter(
         val code: TextView = rowView.findViewById(R.id.code)
         val name: TextView = rowView.findViewById(R.id.name)
         val formula: TextView = rowView.findViewById(R.id.formula)
+        val v: TextView = rowView.findViewById(R.id.value)
 
         code.text = data[position].ParamCode
         formula.text = data[position].ParamFormula
+        v.text = data[position].Value
 
         var temp: MutableList<String> = data[position].ParamName.split(" ") as MutableList<String>
         var upperResult: String = ""

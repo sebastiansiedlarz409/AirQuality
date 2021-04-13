@@ -1,7 +1,10 @@
 package com.example.apiclient
 
+import android.view.View
 import com.example.database.PositionEntity
+import com.example.database.StationHistoryEntity
 import com.example.database.StationIndexEntity
+import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import okhttp3.*
@@ -17,6 +20,7 @@ class APIClient @Inject constructor(){
     private val urlStation: String = "https://api.gios.gov.pl/pjp-api/rest/station/findAll"
     private val urlStationIndex: String = "https://api.gios.gov.pl/pjp-api/rest/aqindex/getIndex/"
     private val urlPositions: String = "https://api.gios.gov.pl/pjp-api/rest/station/sensors/"
+    private val urlSensorValue: String = "https://api.gios.gov.pl/pjp-api/rest/data/getData/"
     private val client = OkHttpClient.Builder().build()
 
     suspend fun getAllStation() : String? {
@@ -114,7 +118,7 @@ class APIClient @Inject constructor(){
         return withContext(IO) { response.body()?.string() }
     }
 
-    fun getPositionsData(data: String?) : MutableList<PositionEntity> {
+    suspend fun getPositionsData(data: String?) : MutableList<PositionEntity> {
 
         val positions: MutableList<PositionEntity> = mutableListOf()
 
@@ -127,15 +131,52 @@ class APIClient @Inject constructor(){
 
         for(i in 1..count){
             val jsonObject = jsonArray.getJSONObject(i-1)
+            val sensorId = jsonObject.getInt("id")
             val stationId = jsonObject.getInt("stationId")
             val jsonSubObject: JSONObject = jsonObject.getJSONObject("param")
             val paramName = jsonSubObject.getString("paramName")
             val paramFormula = jsonSubObject.getString("paramFormula")
             val paramCode = jsonSubObject.getString("paramCode")
 
-            positions.add(PositionEntity(stationId, paramName, paramFormula, paramCode))
+            var value: String? = null
+
+            val getSensorValue: Deferred<Unit> = CoroutineScope(IO).async{
+
+                val data: String? = getSensorValue(sensorId);
+                value = getSensorValueData(data)
+
+            }
+
+            getSensorValue.await()
+
+            positions.add(PositionEntity(sensorId, stationId, paramName, paramFormula, paramCode, value as String))
         }
 
         return positions
+    }
+
+    suspend fun getSensorValue(index: Int): String? {
+
+        if(index == 0){
+            return null
+        }
+
+        val request = Request.Builder()
+            .url(this.urlSensorValue + index)
+            .build()
+
+        val response: Response = client.newCall(request).await()
+
+        return withContext(IO) { response.body()?.string() }
+    }
+
+    fun getSensorValueData(data: String?): String?{
+        if(data.isNullOrEmpty()){
+            return ""
+        }
+
+        val jsonArray = JSONObject(data).getJSONArray("values")
+
+        return (jsonArray[jsonArray.length()-1] as JSONObject).getString("value")
     }
 }
