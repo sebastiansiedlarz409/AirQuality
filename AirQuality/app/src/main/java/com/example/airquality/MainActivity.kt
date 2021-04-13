@@ -206,6 +206,6 @@ class MainActivity : AppCompatActivity() {
         lastUpdate.text = if (sharedPreferences.getLong("lastStationRefreshTime", 0) == 0.toLong())
             "Odświeżono: NIE"
         else
-            "Odświeżono: ${SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(sharedPreferences.getLong("lastStationRefreshTime", 0))}"
+            "Odświeżono: ${SimpleDateFormat("dd/MM/yyyy HH:mm").format(sharedPreferences.getLong("lastStationRefreshTime", 0))}"
     }
 }

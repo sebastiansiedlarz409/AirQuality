@@ -111,6 +111,6 @@ class PositionActivity : AppCompatActivity() {
         lastUpdatePosition.text = if (sharedPreferences.getLong("lastPositionRefreshTime${intent.getIntExtra("id", 0)}", 0) == 0.toLong())
             "Odświeżono: NIE"
         else
-            "Odświeżono: ${SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(sharedPreferences.getLong("lastPositionRefreshTime${intent.getIntExtra("id", 0)}", 0))}"
+            "Odświeżono: ${SimpleDateFormat("dd/MM/yyyy HH:mm").format(sharedPreferences.getLong("lastPositionRefreshTime${intent.getIntExtra("id", 0)}", 0))}"
     }
 }

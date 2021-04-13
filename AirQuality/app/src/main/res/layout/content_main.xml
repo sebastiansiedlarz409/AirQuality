@@ -54,6 +54,8 @@
             android:ems="10"
             android:background="@drawable/search_background"
             android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
             android:inputType="textPersonName"
             android:hint="Szukaj" />
 
