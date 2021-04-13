@@ -116,23 +116,25 @@ class MainActivity : AppCompatActivity() {
                 dialog.dismiss()
             }
 
+            val index: String? = station.Index
+
             when {
-                station.Index.equals("Bardzo dobry") -> {
+                index.equals("Bardzo dobry") -> {
                     popup.pop.setBackgroundResource(R.drawable.card_background_vg)
                 }
-                station.Index.equals("Dobry") -> {
+                index.equals("Dobry") -> {
                     popup.pop.setBackgroundResource(R.drawable.card_background_g)
                 }
-                station.Index.equals("Umiarkowany") -> {
+                index.equals("Umiarkowany") -> {
                     popup.pop.setBackgroundResource(R.drawable.card_background_u)
                 }
-                station.Index.equals("Dostateczny") -> {
+                index.equals("Dostateczny") -> {
                     popup.pop.setBackgroundResource(R.drawable.card_background_c)
                 }
-                station.Index.equals("Zły") -> {
+                index.equals("Zły") -> {
                     popup.pop.setBackgroundResource(R.drawable.card_background_b)
                 }
-                station.Index.equals("Bardzo zły") -> {
+                index.equals("Bardzo zły") -> {
                     popup.pop.setBackgroundResource(R.drawable.card_background_vb)
                 }
             }

@@ -5,6 +5,8 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
@@ -12,7 +14,11 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.database.DataBase
 import com.example.database.StationHistoryEntity
 import kotlinx.android.synthetic.main.activity_station_history.*
+import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.content_station_history.*
+import kotlinx.android.synthetic.main.content_station_history.lastUpdate
+import kotlinx.android.synthetic.main.content_station_history.progress
+import kotlinx.android.synthetic.main.content_station_history.search
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,12 +50,23 @@ class StationHistoryActivity : AppCompatActivity() {
         }
 
         var stationHistory: MutableList<StationHistoryEntity> = arrayListOf()
+        var adapter = StationHistoryAdapter(this@StationHistoryActivity, stationHistory)
+
+        search.addTextChangedListener(object: TextWatcher {
+            override fun afterTextChanged(p0: Editable?) { }
+
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) { }
+
+            override fun onTextChanged(search: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                adapter.filter(search)
+            }
+        })
 
         CoroutineScope(Dispatchers.Default).launch {
             stationHistory = db.stationHistoryDao().getAll(intent.getIntExtra("id", 0))
 
             withContext(Dispatchers.Main){
-                var adapter = StationHistoryAdapter(this@StationHistoryActivity, stationHistory)
+                adapter = StationHistoryAdapter(this@StationHistoryActivity, stationHistory)
                 stationHistoryList.adapter = adapter
             }
         }

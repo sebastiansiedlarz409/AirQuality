@@ -2,6 +2,7 @@ package com.example.airquality
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -118,7 +119,7 @@ class StationHistoryAdapter(
 
         for (i in 0..count) {
             val item: StationHistoryEntity = data[i]
-            if (item.Name.toLowerCase(Locale.ROOT).contains(toSearch)) {
+            if (item.Date.toLowerCase(Locale.ROOT).contains(toSearch)) {
                 filtered.add(item)
             }
         }
