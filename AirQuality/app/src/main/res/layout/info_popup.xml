@@ -13,6 +13,7 @@
         android:orientation="vertical"
         android:elevation="6dp"
         tools:ignore="MissingConstraints"
+        android:theme="@style/Theme.MaterialComponents.Light"
         card_view:cardCornerRadius="2dp">
 
         <LinearLayout

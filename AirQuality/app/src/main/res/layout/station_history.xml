@@ -13,6 +13,7 @@
         android:layout_margin="10dp"
         android:elevation="6dp"
         tools:ignore="MissingConstraints"
+        android:theme="@style/Theme.MaterialComponents.Light"
         card_view:cardCornerRadius="8dp">
 
         <LinearLayout
