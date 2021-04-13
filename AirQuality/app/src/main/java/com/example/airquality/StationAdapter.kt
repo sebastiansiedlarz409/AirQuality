@@ -114,7 +114,13 @@ class StationAdapter(
 
         for(i in 0..count){
             val item: StationIndexEntity = data[i]
-            if(item.Name.toLowerCase(Locale.ROOT).contains(toSearch)){
+            if(item.Name.toLowerCase(Locale.ROOT).startsWith(toSearch, true)){
+                filtered.add(item)
+            }
+        }
+        for(i in 0..count){
+            val item: StationIndexEntity = data[i]
+            if(item.Name.toLowerCase(Locale.ROOT).contains(toSearch) and !filtered.contains(item)){
                 filtered.add(item)
             }
         }
