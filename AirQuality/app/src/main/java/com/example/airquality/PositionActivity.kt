@@ -12,6 +12,7 @@ import com.example.DaggerDependencies
 import com.example.apiclient.APIClient
 import com.example.database.DataBase
 import com.example.database.PositionEntity
+import com.example.database.StationIndexEntity
 import kotlinx.android.synthetic.main.activity_position.fab
 import kotlinx.android.synthetic.main.content_position.*
 import kotlinx.android.synthetic.main.content_position.progress
@@ -81,6 +82,15 @@ class PositionActivity : AppCompatActivity() {
 
         adapter = PositionAdapter(this, listItems)
         positionsList.adapter = adapter
+
+        positionsList.setOnItemClickListener{
+                parent, _, position, _ ->
+            val position: PositionEntity = parent.getItemAtPosition(position) as PositionEntity
+            val url = "https://www.google.com/search?q=" + position.ParamName
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse(url)
+            startActivity(intent)
+        }
     }
 
     private suspend fun refreshPosition(){
