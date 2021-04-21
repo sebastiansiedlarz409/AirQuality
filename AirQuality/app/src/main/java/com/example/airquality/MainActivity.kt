@@ -1,8 +1,10 @@
 package com.example.airquality
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
@@ -10,14 +12,17 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.DaggerDependencies
 import com.example.apiclient.APIClient
 import com.example.database.DataBase
 import com.example.database.StationHistoryEntity
 import com.example.database.StationIndexEntity
+import com.example.location.Location
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -26,6 +31,7 @@ import kotlinx.android.synthetic.main.info_popup.view.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import java.security.Permission
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -42,6 +48,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         DaggerDependencies.create().insertApiClientMainActivity(this)
+
+        ActivityCompat.requestPermissions(this@MainActivity, Array<String>(1){android.Manifest.permission.ACCESS_FINE_LOCATION}, 101)
 
         sharedPreferences = getSharedPreferences("AiqQualitySP", Context.MODE_PRIVATE)
 
@@ -157,11 +165,25 @@ class MainActivity : AppCompatActivity() {
             }
 
             val stations = db.stationIndexDao().getAll()
+            val location: Location = Location()
+            var nearest: StationIndexEntity? = null
+
+            if (ContextCompat.checkSelfPermission(this@MainActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ){
+
+            }
+            else{
+                nearest = location.getNearestStation(stations, this@MainActivity)
+            }
 
             for(item in stations){
+                if(item.StationId.equals(nearest?.StationId))
+                    continue
                 listItems.add(item)
             }
             listItems.sort()
+            if (nearest != null){
+                listItems.add(0, nearest)
+            }
 
             withContext(Main){
                 adapter = StationAdapter(this@MainActivity, listItems)
