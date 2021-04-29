@@ -7,13 +7,16 @@ import android.util.Log
 import android.widget.Toast
 
 class BService: Service() {
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        onTaskRemoved(intent)
-        Log.d("ASD", "GFAGFHAGFAH")
+    override fun onCreate() {
+        super.onCreate()
         Toast.makeText(
-            applicationContext, "Start background service!",
+            applicationContext, "Aplikacja pracuje w tle!",
             Toast.LENGTH_SHORT
         ).show()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        onTaskRemoved(intent)
         return START_STICKY
     }
 
