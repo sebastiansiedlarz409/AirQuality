@@ -1,18 +1,14 @@
 package com.example.airquality
 
-import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -31,7 +27,6 @@ import kotlinx.android.synthetic.main.info_popup.view.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
-import java.security.Permission
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -193,6 +188,9 @@ class MainActivity : AppCompatActivity() {
 
         adapter = StationAdapter(this, listItems)
         stationList.adapter = adapter
+
+        //start background service
+        startService(Intent(applicationContext, BService::class.java))
     }
 
     private suspend fun refreshStationIndex() {
