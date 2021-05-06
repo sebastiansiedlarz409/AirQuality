@@ -1,11 +1,16 @@
 package com.example.airquality
 
+import android.app.job.JobInfo
+import android.app.job.JobInfo.BACKOFF_POLICY_LINEAR
+import android.app.job.JobScheduler
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -31,7 +36,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 
-
 class MainActivity : AppCompatActivity() {
 
     @Inject
@@ -44,7 +48,17 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         DaggerDependencies.create().insertApiClientMainActivity(this)
 
-        ActivityCompat.requestPermissions(this@MainActivity, Array<String>(1){android.Manifest.permission.ACCESS_FINE_LOCATION}, 101)
+        ActivityCompat.requestPermissions(
+            this@MainActivity,
+            Array<String>(1) { android.Manifest.permission.ACCESS_FINE_LOCATION },
+            101
+        )
+
+        ActivityCompat.requestPermissions(
+            this@MainActivity,
+            Array<String>(1) { android.Manifest.permission.RECEIVE_BOOT_COMPLETED },
+            102
+        )
 
         sharedPreferences = getSharedPreferences("AiqQualitySP", Context.MODE_PRIVATE)
 
@@ -55,7 +69,12 @@ class MainActivity : AppCompatActivity() {
         fab.setOnClickListener { view ->
             Snackbar.make(view, "By Sebastian Siedlarz", Snackbar.LENGTH_LONG)
                 .setAction("GITHUB") {
-                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/sebastiansiedlarz409")))
+                    startActivity(
+                        Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse("https://github.com/sebastiansiedlarz409")
+                        )
+                    )
                 }
                 .show()
         }
@@ -64,10 +83,10 @@ class MainActivity : AppCompatActivity() {
 
         var adapter = StationAdapter(this, arrayListOf())
 
-        search.addTextChangedListener(object: TextWatcher{
-            override fun afterTextChanged(p0: Editable?) { }
+        search.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(p0: Editable?) {}
 
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) { }
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 
             override fun onTextChanged(search: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 adapter.filter(search)
@@ -75,8 +94,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         //onclick with popup
-        stationList.setOnItemClickListener{
-                parent, _, position, _ ->
+        stationList.setOnItemClickListener{ parent, _, position, _ ->
 
             val station: StationIndexEntity = parent.getItemAtPosition(position) as StationIndexEntity
 
@@ -147,23 +165,14 @@ class MainActivity : AppCompatActivity() {
         val listItems: ArrayList<StationIndexEntity> = arrayListOf()
 
         CoroutineScope(Dispatchers.Default).launch {
-            if(sharedPreferences.getLong("lastStationRefreshTime", 0) == 0.toLong()){
-                refreshStationIndex()
-                refreshLastUpdate()
-            }
-            else{
-                val diff = Date().time - sharedPreferences.getLong("lastStationRefreshTime", 0)
-                if(Date(diff).time / 60000 > 60){
-                    refreshStationIndex()
-                    refreshLastUpdate()
-                }
-            }
-
             val stations = db.stationIndexDao().getAll()
             val location: Location = Location()
             var nearest: StationIndexEntity? = null
 
-            if (ContextCompat.checkSelfPermission(this@MainActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ){
+            if (ContextCompat.checkSelfPermission(
+                    this@MainActivity,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED ){
 
             }
             else{
@@ -189,43 +198,24 @@ class MainActivity : AppCompatActivity() {
         adapter = StationAdapter(this, listItems)
         stationList.adapter = adapter
 
-        //start background service
-        startService(Intent(applicationContext, BService::class.java))
-    }
-
-    private suspend fun refreshStationIndex() {
-        val refreshStationDb: Deferred<Unit> = CoroutineScope(IO).async{
-            withContext(Main){
-                progress.visibility = View.VISIBLE
-            }
-
-            val data: String? = apiClient.getAllStation()
-            val stationsList: MutableList<StationIndexEntity> = apiClient.getAllStationList(data)
-
-            db.stationIndexDao().deleteAll()
-
-            for(item in stationsList){
-                db.stationIndexDao().insert(item)
-            }
-
-            for(item in stationsList){
-                db.stationHistoryDao().insert(StationHistoryEntity(item.StationId, item.StationName, item.Name, item.Date, item.Index, Date().time))
-            }
-
-            sharedPreferences.edit().putLong("lastStationRefreshTime", Date().time).apply()
-        }
-
-        refreshStationDb.await()
-
-        withContext(Main){
-            progress.visibility = View.GONE
-        }
+        //start background job
+        val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        val jobInfo = JobInfo.Builder(123, ComponentName(this, BJob::class.java))
+        val job = jobInfo.setPersisted(true)
+            .setBackoffCriteria(30 * 1000, BACKOFF_POLICY_LINEAR)
+            .setPeriodic(30 * 1000, 30 * 1000).build()
+        jobScheduler.schedule(job)
     }
 
     private fun refreshLastUpdate(){
         lastUpdate.text = if (sharedPreferences.getLong("lastStationRefreshTime", 0) == 0.toLong())
             "Odświeżono: NIE"
         else
-            "Odświeżono: ${SimpleDateFormat("dd/MM/yyyy HH:mm").format(sharedPreferences.getLong("lastStationRefreshTime", 0))}"
+            "Odświeżono: ${SimpleDateFormat("dd/MM/yyyy HH:mm").format(
+                sharedPreferences.getLong(
+                    "lastStationRefreshTime",
+                    0
+                )
+            )}"
     }
 }
