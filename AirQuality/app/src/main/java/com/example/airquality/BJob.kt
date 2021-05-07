@@ -2,13 +2,7 @@ package com.example.airquality
 
 import android.app.job.JobParameters
 import android.app.job.JobService
-import android.content.Context
-import android.util.Log
 import android.widget.Toast
-import com.example.apiclient.APIClient
-import com.example.database.DataBase
-import com.example.database.StationHistoryEntity
-import com.example.database.StationIndexEntity
 import com.example.service.DataManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,8 +14,6 @@ import java.util.*
 
 class BJob : JobService() {
     private lateinit var params: JobParameters
-    private lateinit var apiClient: APIClient
-    private lateinit var db: DataBase
     private lateinit var dataManager: DataManager
 
     override fun onStartJob(params: JobParameters?): Boolean {
@@ -48,7 +40,7 @@ class BJob : JobService() {
         return true
     }
 
-    fun notifyJobFinished() {
+    private fun notifyJobFinished() {
         jobFinished(params,true)
     }
 }

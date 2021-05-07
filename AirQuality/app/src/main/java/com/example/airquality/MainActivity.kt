@@ -38,6 +38,9 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var dataManager: DataManager
 
+    private lateinit var adapter: StationAdapter
+
+    private lateinit var location: Location
     private lateinit var db: DataBase
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -77,7 +80,7 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
 
-        var adapter = StationAdapter(this, arrayListOf())
+        adapter = StationAdapter(this, arrayListOf())
 
         search.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {}
@@ -159,17 +162,37 @@ class MainActivity : AppCompatActivity() {
 
         //Receiver list on screen
         val listItems: ArrayList<StationIndexEntity> = arrayListOf()
+        location = Location(this@MainActivity, {listItems -> refreshStationIndexView(listItems)}, listItems)
 
         CoroutineScope(Dispatchers.Default).launch {
+
             //when app is run first time
             if (sharedPreferences.getLong("lastStationRefreshTime", 0) == 0.toLong()){
                 refreshStationIndex()
                 refreshLastUpdate()
             }
 
+            refreshStationIndexView(listItems)
+        }
+
+        adapter = StationAdapter(this, listItems)
+        stationList.adapter = adapter
+
+        //start background job
+        //val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        //val jobInfo = JobInfo.Builder(123, ComponentName(this, BJob::class.java))
+        //val job = jobInfo.setPersisted(true)
+        //    .setBackoffCriteria(30 * 60 * 1000, BACKOFF_POLICY_LINEAR)
+        //    .setPeriodic(30*60 * 1000, 30*60*1000).build()
+        //jobScheduler.schedule(job)
+    }
+
+    private suspend fun refreshStationIndexView(listItems: ArrayList<StationIndexEntity>){
+        val refreshStationIndexViewTask: Deferred<Unit> = CoroutineScope(IO).async{
+            listItems.clear()
+
             val stations = db.stationIndexDao().getAll()
 
-            val location = Location()
             var nearest: StationIndexEntity? = null
 
             if (ContextCompat.checkSelfPermission(
@@ -198,16 +221,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        adapter = StationAdapter(this, listItems)
-        stationList.adapter = adapter
-
-        //start background job
-        //val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-        //val jobInfo = JobInfo.Builder(123, ComponentName(this, BJob::class.java))
-        //val job = jobInfo.setPersisted(true)
-        //    .setBackoffCriteria(30 * 60 * 1000, BACKOFF_POLICY_LINEAR)
-        //    .setPeriodic(30*60 * 1000, 30*60*1000).build()
-        //jobScheduler.schedule(job)
+        refreshStationIndexViewTask.await()
     }
 
     private suspend fun refreshStationIndex() {
