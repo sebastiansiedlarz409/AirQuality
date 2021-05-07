@@ -93,11 +93,11 @@ class PositionActivity : AppCompatActivity() {
     }
 
     private suspend fun refreshPosition(){
-        val refreshPositionDb: Deferred<Unit> = CoroutineScope(IO).async{
+        val refreshPositionTask: Deferred<Unit> = CoroutineScope(IO).async{
             dataManager.updatePositionData(this@PositionActivity, intent)
         }
 
-        refreshPositionDb.await()
+        refreshPositionTask.await()
     }
 
     private fun refreshLastUpdate(){

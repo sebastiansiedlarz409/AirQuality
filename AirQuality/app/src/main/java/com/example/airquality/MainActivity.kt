@@ -55,12 +55,6 @@ class MainActivity : AppCompatActivity() {
             101
         )
 
-        ActivityCompat.requestPermissions(
-            this@MainActivity,
-            Array(1) { android.Manifest.permission.RECEIVE_BOOT_COMPLETED },
-            102
-        )
-
         sharedPreferences = getSharedPreferences("AiqQualitySP", Context.MODE_PRIVATE)
 
         db = DataBase.getDbInstance(this)
@@ -199,7 +193,7 @@ class MainActivity : AppCompatActivity() {
                     this@MainActivity,
                     android.Manifest.permission.ACCESS_FINE_LOCATION
                 ) != PackageManager.PERMISSION_GRANTED ){
-
+                //DO NOTHING
             }
             else{
                 nearest = location.getNearestStation(stations, this@MainActivity)
@@ -225,11 +219,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private suspend fun refreshStationIndex() {
-        val refreshStationDb: Deferred<Unit> = CoroutineScope(IO).async{
+        val refreshStationIndexTask: Deferred<Unit> = CoroutineScope(IO).async{
             dataManager.updateStationData(this@MainActivity)
         }
 
-        refreshStationDb.await()
+        refreshStationIndexTask.await()
     }
 
     private fun refreshLastUpdate(){
