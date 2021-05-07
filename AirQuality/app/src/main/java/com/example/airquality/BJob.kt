@@ -36,7 +36,7 @@ class BJob : JobService() {
                 Toast.makeText(applicationContext, "Update "+currentDate, Toast.LENGTH_SHORT).show()
             }
 
-            dataManager.UpdateStationData(applicationContext)
+            dataManager.updateStationData(applicationContext)
 
             notifyJobFinished()
         }

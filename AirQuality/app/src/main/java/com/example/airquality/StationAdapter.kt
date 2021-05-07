@@ -44,7 +44,7 @@ class StationAdapter(
         districtName.text = "Powiat: ${filteredData[position].DistrictName}"
         provinceName.text = "Województwo: ${filteredData[position].ProvinceName}"
 
-        val index: String? = filteredData[position].Index
+        val index: String = filteredData[position].Index
 
         when {
             index.equals("Bardzo dobry") -> {

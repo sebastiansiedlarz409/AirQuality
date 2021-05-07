@@ -49,7 +49,7 @@ class StationHistoryAdapter(
         val date = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
         readTime.text = "Odczyt: ${formatter.format(date)}"
 
-        val index: String? = filteredData[position].Index
+        val index: String = filteredData[position].Index
 
         when {
             index.equals("Bardzo dobry") -> {
@@ -79,19 +79,6 @@ class StationHistoryAdapter(
         }
 
         return rowView
-    }
-
-    private fun firstUpperCase(value: String): String {
-        val temp: List<String> = value.split(" ")
-
-        var result = ""
-        for (item in temp) {
-            val size: Int = item.length
-            result += item[0].toUpperCase() + item.substring(1, size).toLowerCase(Locale.ROOT)
-            result += " "
-        }
-
-        return result.trim()
     }
 
     override fun getItem(position: Int): StationHistoryEntity {

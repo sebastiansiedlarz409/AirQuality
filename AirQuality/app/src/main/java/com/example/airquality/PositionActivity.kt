@@ -5,29 +5,30 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
-import android.view.View
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import com.example.DaggerDependencies
 import com.example.apiclient.APIClient
 import com.example.database.DataBase
 import com.example.database.PositionEntity
-import com.example.database.StationIndexEntity
-import kotlinx.android.synthetic.main.activity_position.fab
+import com.example.service.DataManager
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.activity_position.*
 import kotlinx.android.synthetic.main.content_position.*
-import kotlinx.android.synthetic.main.content_position.progress
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
-import kotlin.collections.ArrayList
 
 class PositionActivity : AppCompatActivity() {
 
     @Inject
     lateinit var apiClient: APIClient
+
+    @Inject
+    lateinit var dataManager: DataManager
+
     private lateinit var db: DataBase
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -39,8 +40,6 @@ class PositionActivity : AppCompatActivity() {
         sharedPreferences = getSharedPreferences("AiqQualitySP", Context.MODE_PRIVATE)
 
         db = DataBase.getDbInstance(this)
-
-        progress.visibility = View.GONE
 
         refreshLastUpdate()
 
@@ -85,8 +84,8 @@ class PositionActivity : AppCompatActivity() {
 
         positionsList.setOnItemClickListener{
                 parent, _, position, _ ->
-            val position: PositionEntity = parent.getItemAtPosition(position) as PositionEntity
-            val url = "https://www.google.com/search?q=" + position.ParamName
+            val pos: PositionEntity = parent.getItemAtPosition(position) as PositionEntity
+            val url = "https://www.google.com/search?q=" + pos.ParamName
             val intent = Intent(Intent.ACTION_VIEW)
             intent.data = Uri.parse(url)
             startActivity(intent)
@@ -95,26 +94,10 @@ class PositionActivity : AppCompatActivity() {
 
     private suspend fun refreshPosition(){
         val refreshPositionDb: Deferred<Unit> = CoroutineScope(IO).async{
-            withContext(Main){
-                progress.visibility = View.VISIBLE
-            }
-            val positions: MutableList<PositionEntity>
-                    = apiClient.getPositionsData(apiClient.getPositions(intent.getIntExtra("id", 0)))
-
-            db.positionDao().deleteAll(intent.getIntExtra("id", 0))
-
-            for(item in positions){
-                db.positionDao().insert(item)
-            }
-
-            sharedPreferences.edit().putLong("lastPositionRefreshTime${intent.getIntExtra("id", 0)}", Date().time).apply()
+            dataManager.updatePositionData(this@PositionActivity, intent)
         }
 
         refreshPositionDb.await()
-
-        withContext(Main){
-            progress.visibility = View.GONE
-        }
     }
 
     private fun refreshLastUpdate(){

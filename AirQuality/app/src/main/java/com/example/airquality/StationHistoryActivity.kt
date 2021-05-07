@@ -8,16 +8,14 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import com.example.database.DataBase
 import com.example.database.StationHistoryEntity
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_station_history.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.content_station_history.*
 import kotlinx.android.synthetic.main.content_station_history.lastUpdate
-import kotlinx.android.synthetic.main.content_station_history.progress
 import kotlinx.android.synthetic.main.content_station_history.search
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

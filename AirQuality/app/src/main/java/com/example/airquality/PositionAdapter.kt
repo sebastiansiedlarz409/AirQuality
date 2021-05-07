@@ -8,9 +8,6 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
 import com.example.database.PositionEntity
-import com.example.database.StationIndexEntity
-import java.util.*
-import kotlin.collections.ArrayList
 
 class PositionAdapter(
     context: Context,
@@ -32,8 +29,8 @@ class PositionAdapter(
         formula.text = data[position].ParamFormula
         v.text = data[position].Value
 
-        var temp: MutableList<String> = data[position].ParamName.split(" ") as MutableList<String>
-        var upperResult: String = ""
+        val temp: MutableList<String> = data[position].ParamName.split(" ") as MutableList<String>
+        var upperResult = ""
         val count: Int = temp.size - 1
 
         for(i in 0..count){

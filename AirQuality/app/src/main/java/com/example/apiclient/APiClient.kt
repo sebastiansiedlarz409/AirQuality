@@ -1,18 +1,15 @@
 package com.example.apiclient
 
-import android.view.View
 import com.example.database.PositionEntity
-import com.example.database.StationHistoryEntity
 import com.example.database.StationIndexEntity
-import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
-import okhttp3.*
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
 import ru.gildor.coroutines.okhttp.await
-import java.lang.Exception
-import java.util.*
 import javax.inject.Inject
 
 class APIClient @Inject constructor(){
@@ -93,7 +90,7 @@ class APIClient @Inject constructor(){
 
     private fun getStationIndexData(data: String?): Pair<String, String> {
         try{
-            val jsonObject = JSONObject(data)
+            val jsonObject = JSONObject(data!!)
             val date = jsonObject.getString("stCalcDate")
             val jsonSubObject: JSONObject = jsonObject.getJSONObject("stIndexLevel")
             val index = jsonSubObject.getString("indexLevelName")
@@ -142,8 +139,8 @@ class APIClient @Inject constructor(){
 
             val getSensorValue: Deferred<Unit> = CoroutineScope(IO).async{
 
-                val data: String? = getSensorValue(sensorId);
-                value = getSensorValueData(data)
+                val sensorValue: String? = getSensorValue(sensorId)
+                value = getSensorValueData(sensorValue)
 
             }
 
@@ -155,7 +152,7 @@ class APIClient @Inject constructor(){
         return positions
     }
 
-    suspend fun getSensorValue(index: Int): String? {
+    private suspend fun getSensorValue(index: Int): String? {
 
         if(index == 0){
             return null
@@ -170,7 +167,7 @@ class APIClient @Inject constructor(){
         return withContext(IO) { response.body()?.string() }
     }
 
-    fun getSensorValueData(data: String?): String?{
+    private fun getSensorValueData(data: String?): String?{
         if(data.isNullOrEmpty()){
             return ""
         }

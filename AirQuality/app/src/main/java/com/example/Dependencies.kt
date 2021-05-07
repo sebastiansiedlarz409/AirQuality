@@ -9,4 +9,5 @@ interface Dependencies {
     fun insertApiClientMainActivity(app: MainActivity)
     fun insertApiClientPositionActivity(app: PositionActivity)
     fun insertDataManagerMainActivity(app: MainActivity)
+    fun insertDataManagerPositionActivity(app: PositionActivity)
 }

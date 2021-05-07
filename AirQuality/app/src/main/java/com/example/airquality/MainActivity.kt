@@ -1,19 +1,13 @@
 package com.example.airquality
 
-import android.app.job.JobInfo
-import android.app.job.JobInfo.BACKOFF_POLICY_LINEAR
-import android.app.job.JobScheduler
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -21,7 +15,6 @@ import androidx.core.content.ContextCompat
 import com.example.DaggerDependencies
 import com.example.apiclient.APIClient
 import com.example.database.DataBase
-import com.example.database.StationHistoryEntity
 import com.example.database.StationIndexEntity
 import com.example.location.Location
 import com.example.service.DataManager
@@ -41,6 +34,7 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var apiClient: APIClient
+
     @Inject
     lateinit var dataManager: DataManager
 
@@ -54,13 +48,13 @@ class MainActivity : AppCompatActivity() {
 
         ActivityCompat.requestPermissions(
             this@MainActivity,
-            Array<String>(1) { android.Manifest.permission.ACCESS_FINE_LOCATION },
+            Array(1) { android.Manifest.permission.ACCESS_FINE_LOCATION },
             101
         )
 
         ActivityCompat.requestPermissions(
             this@MainActivity,
-            Array<String>(1) { android.Manifest.permission.RECEIVE_BOOT_COMPLETED },
+            Array(1) { android.Manifest.permission.RECEIVE_BOOT_COMPLETED },
             102
         )
 
@@ -119,7 +113,7 @@ class MainActivity : AppCompatActivity() {
             val builder = AlertDialog.Builder(this)
 
             builder.setView(popup);
-            var dialog = builder.show();
+            val dialog = builder.show();
 
             popup.setBackgroundColor(ContextCompat.getColor(this, android.R.color.transparent));
 
@@ -139,7 +133,7 @@ class MainActivity : AppCompatActivity() {
                 dialog.dismiss()
             }
 
-            val index: String? = station.Index
+            val index: String = station.Index
 
             when {
                 index.equals("Bardzo dobry") -> {
@@ -173,9 +167,9 @@ class MainActivity : AppCompatActivity() {
                 refreshLastUpdate()
             }
 
-            var stations = db.stationIndexDao().getAll()
+            val stations = db.stationIndexDao().getAll()
 
-            val location: Location = Location()
+            val location = Location()
             var nearest: StationIndexEntity? = null
 
             if (ContextCompat.checkSelfPermission(
@@ -218,7 +212,7 @@ class MainActivity : AppCompatActivity() {
 
     private suspend fun refreshStationIndex() {
         val refreshStationDb: Deferred<Unit> = CoroutineScope(IO).async{
-            dataManager.UpdateStationData(this@MainActivity)
+            dataManager.updateStationData(this@MainActivity)
         }
 
         refreshStationDb.await()
