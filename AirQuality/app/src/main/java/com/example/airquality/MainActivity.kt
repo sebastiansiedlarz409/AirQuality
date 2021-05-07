@@ -24,6 +24,7 @@ import com.example.database.DataBase
 import com.example.database.StationHistoryEntity
 import com.example.database.StationIndexEntity
 import com.example.location.Location
+import com.example.service.DataManager
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -40,6 +41,9 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var apiClient: APIClient
+    @Inject
+    lateinit var dataManager: DataManager
+
     private lateinit var db: DataBase
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -78,8 +82,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 .show()
         }
-
-        progress.visibility = View.GONE
 
         var adapter = StationAdapter(this, arrayListOf())
 
@@ -165,7 +167,14 @@ class MainActivity : AppCompatActivity() {
         val listItems: ArrayList<StationIndexEntity> = arrayListOf()
 
         CoroutineScope(Dispatchers.Default).launch {
-            val stations = db.stationIndexDao().getAll()
+            //when app is run first time
+            if (sharedPreferences.getLong("lastStationRefreshTime", 0) == 0.toLong()){
+                refreshStationIndex()
+                refreshLastUpdate()
+            }
+
+            var stations = db.stationIndexDao().getAll()
+
             val location: Location = Location()
             var nearest: StationIndexEntity? = null
 
@@ -199,12 +208,20 @@ class MainActivity : AppCompatActivity() {
         stationList.adapter = adapter
 
         //start background job
-        val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-        val jobInfo = JobInfo.Builder(123, ComponentName(this, BJob::class.java))
-        val job = jobInfo.setPersisted(true)
-            .setBackoffCriteria(30 * 1000, BACKOFF_POLICY_LINEAR)
-            .setPeriodic(30 * 1000, 30 * 1000).build()
-        jobScheduler.schedule(job)
+        //val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        //val jobInfo = JobInfo.Builder(123, ComponentName(this, BJob::class.java))
+        //val job = jobInfo.setPersisted(true)
+        //    .setBackoffCriteria(30 * 60 * 1000, BACKOFF_POLICY_LINEAR)
+        //    .setPeriodic(30*60 * 1000, 30*60*1000).build()
+        //jobScheduler.schedule(job)
+    }
+
+    private suspend fun refreshStationIndex() {
+        val refreshStationDb: Deferred<Unit> = CoroutineScope(IO).async{
+            dataManager.UpdateStationData(this@MainActivity)
+        }
+
+        refreshStationDb.await()
     }
 
     private fun refreshLastUpdate(){
