@@ -1,5 +1,9 @@
 package com.example.airquality
 
+import android.app.job.JobInfo
+import android.app.job.JobInfo.BACKOFF_POLICY_LINEAR
+import android.app.job.JobScheduler
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -53,6 +57,12 @@ class MainActivity : AppCompatActivity() {
             this@MainActivity,
             Array(1) { android.Manifest.permission.ACCESS_FINE_LOCATION },
             101
+        )
+
+        ActivityCompat.requestPermissions(
+            this@MainActivity,
+            Array(1) { android.Manifest.permission.RECEIVE_BOOT_COMPLETED },
+            102
         )
 
         sharedPreferences = getSharedPreferences("AiqQualitySP", Context.MODE_PRIVATE)
@@ -173,12 +183,14 @@ class MainActivity : AppCompatActivity() {
         stationList.adapter = adapter
 
         //start background job
-        //val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-        //val jobInfo = JobInfo.Builder(123, ComponentName(this, BJob::class.java))
-        //val job = jobInfo.setPersisted(true)
-        //    .setBackoffCriteria(30 * 60 * 1000, BACKOFF_POLICY_LINEAR)
-        //    .setPeriodic(30*60 * 1000, 30*60*1000).build()
-        //jobScheduler.schedule(job)
+        if (sharedPreferences.getInt("jobStarted", 0) == 0){
+            val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+            val jobInfo = JobInfo.Builder(123, ComponentName(this, BJob::class.java))
+            val job = jobInfo.setPersisted(true)
+                .setPeriodic(30 *60 * 1000, 30*60*1000).build()
+            jobScheduler.schedule(job)
+            sharedPreferences.edit().putInt("jobStarted", 1).apply()
+        }
     }
 
     private suspend fun refreshStationIndexView(listItems: ArrayList<StationIndexEntity>){
