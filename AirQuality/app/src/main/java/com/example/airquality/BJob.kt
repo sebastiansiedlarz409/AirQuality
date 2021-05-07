@@ -2,6 +2,7 @@ package com.example.airquality
 
 import android.app.job.JobParameters
 import android.app.job.JobService
+import android.content.Context
 import android.widget.Toast
 import com.example.service.DataManager
 import kotlinx.coroutines.CoroutineScope
@@ -24,6 +25,7 @@ class BJob : JobService() {
         CoroutineScope(Dispatchers.Default).launch {
             val sdf = SimpleDateFormat("dd/M/yyyy HH:mm:ss")
             val currentDate = sdf.format(Date())
+
             withContext(Main){
                 Toast.makeText(applicationContext, "Update "+currentDate, Toast.LENGTH_SHORT).show()
             }

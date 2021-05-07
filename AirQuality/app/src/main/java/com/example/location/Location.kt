@@ -37,9 +37,7 @@ class Location : LocationListener {
         val lat: Double = station.Lat.toDouble()
         val lon: Double = station.Lon.toDouble()
 
-        Log.d(longitude.toString(), latitude.toString())
-
-        return Math.sqrt((lat- latitude!!)*(lat- latitude!!) - (lon- longitude!!)*(lon- longitude!!))
+        return Math.sqrt((lat- latitude!!)*(lat- latitude!!) + (lon- longitude!!)*(lon- longitude!!))
     }
 
     fun getNearestStation(stations: MutableList<StationIndexEntity>, context: Context): StationIndexEntity?{
@@ -51,7 +49,6 @@ class Location : LocationListener {
         var best: StationIndexEntity? = null
         for(station in stations){
             val result = getDistance(station, context)
-            Log.d(station.Name, result.toString())
 
             if(result < min){
                 min = result

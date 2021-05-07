@@ -187,7 +187,7 @@ class MainActivity : AppCompatActivity() {
             val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
             val jobInfo = JobInfo.Builder(123, ComponentName(this, BJob::class.java))
             val job = jobInfo.setPersisted(true)
-                .setPeriodic(30 *60 * 1000, 30*60*1000).build()
+                .setPeriodic(20 *60 * 1000, 20 * 60 * 1000).build()
             jobScheduler.schedule(job)
             sharedPreferences.edit().putInt("jobStarted", 1).apply()
         }
