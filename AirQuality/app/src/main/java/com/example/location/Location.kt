@@ -14,20 +14,34 @@ import kotlinx.coroutines.launch
 import java.util.ArrayList
 
 class Location : LocationListener {
+    private var callUI: Boolean = false
     private var refreshed: Boolean = false
-    private var longitude: Double? = null
-    private var latitude: Double? = null
+    public var longitude: Double? = null
+    public var latitude: Double? = null
     private var listItems: ArrayList<StationIndexEntity> = arrayListOf()
-    private var refreshViewCallback: suspend  (list: ArrayList<StationIndexEntity>) -> Unit
+    private lateinit var refreshViewCallback: suspend  (list: ArrayList<StationIndexEntity>) -> Unit
+
+    @SuppressLint("MissingPermission")
+    constructor(
+        context: Context,
+        callUI: Boolean
+    ){
+        this.callUI = callUI
+
+        val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager?
+        lm!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
+    }
 
     @SuppressLint("MissingPermission")
     constructor(
         context: Context,
         callback: suspend (list: ArrayList<StationIndexEntity>) -> Unit,
-        listItems: ArrayList<StationIndexEntity>
+        listItems: ArrayList<StationIndexEntity>,
+        callUI: Boolean
     ){
         refreshViewCallback = callback
         this.listItems = listItems
+        this.callUI = callUI
 
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager?
         lm!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
@@ -63,10 +77,12 @@ class Location : LocationListener {
         longitude = location?.longitude ?: 0.0
         latitude = location?.latitude ?: 0.0
 
-        CoroutineScope(Dispatchers.Default).launch {
-            if(!refreshed) {
-                refreshViewCallback(listItems)
-                refreshed = true
+        if(callUI) {
+            CoroutineScope(Dispatchers.Default).launch {
+                if(!refreshed) {
+                    refreshViewCallback(listItems)
+                    refreshed = true
+                }
             }
         }
     }

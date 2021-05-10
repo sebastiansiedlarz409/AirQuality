@@ -166,7 +166,7 @@ class MainActivity : AppCompatActivity() {
 
         //Receiver list on screen
         val listItems: ArrayList<StationIndexEntity> = arrayListOf()
-        location = Location(this@MainActivity, {listItems -> refreshStationIndexView(listItems)}, listItems)
+        location = Location(this@MainActivity, {listItems -> refreshStationIndexView(listItems)}, listItems, true)
 
         CoroutineScope(Dispatchers.Default).launch {
 
@@ -184,12 +184,14 @@ class MainActivity : AppCompatActivity() {
 
         //start background job
         if (sharedPreferences.getInt("jobStarted", 0) == 0){
-            val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-            val jobInfo = JobInfo.Builder(123, ComponentName(this, BJob::class.java))
-            val job = jobInfo.setPersisted(true)
-                .setPeriodic(20 *60 * 1000, 20 * 60 * 1000).build()
-            jobScheduler.schedule(job)
             sharedPreferences.edit().putInt("jobStarted", 1).apply()
+            val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+            val jobInfo = JobInfo.Builder(1, ComponentName(this, BJob::class.java))
+            val job = jobInfo.setPersisted(true)
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .setBackoffCriteria(30*60*1000, JobInfo.BACKOFF_POLICY_LINEAR)
+                .setPeriodic(30 * 60 * 1000).build()
+            jobScheduler.schedule(job)
         }
     }
 

@@ -10,6 +10,7 @@ import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
 import ru.gildor.coroutines.okhttp.await
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class APIClient @Inject constructor(){
@@ -21,22 +22,27 @@ class APIClient @Inject constructor(){
     private val client = OkHttpClient.Builder().build()
 
     suspend fun getAllStation() : String? {
+        return try{
+            val request = Request.Builder()
+                .url(this.urlStation)
+                .build()
 
-        val request = Request.Builder()
-            .url(this.urlStation)
-            .build()
+            val response: Response = client.newCall(request).await()
 
-        val response: Response = client.newCall(request).await()
-
-        return withContext(IO) { response.body()?.string() }
-
+            withContext(IO) { response.body()?.string() }
+        } catch (ex: Exception){
+            ""
+        }
     }
 
     suspend fun getAllStationList(data: String?) : MutableList<StationIndexEntity> {
+        val stations: MutableList<StationIndexEntity> = mutableListOf()
+
+        if(data.isNullOrEmpty())
+            return stations
 
         val jsonArray = JSONArray(data)
         val count: Int = jsonArray.length()
-        val stations: MutableList<StationIndexEntity> = mutableListOf()
 
         for(i in 1..count){
             val jsonObject: JSONObject = jsonArray.getJSONObject(i-1)
@@ -74,18 +80,20 @@ class APIClient @Inject constructor(){
     }
 
     private suspend fun getStationIndex(station: StationIndexEntity): String? {
+        return try{
+            client.dispatcher().maxRequests = 90
+            client.dispatcher().maxRequestsPerHost = 90
 
-        client.dispatcher().maxRequests = 90
-        client.dispatcher().maxRequestsPerHost = 90
+            val request = Request.Builder()
+                .url(this.urlStationIndex + station.StationId)
+                .build()
 
-        val request = Request.Builder()
-            .url(this.urlStationIndex + station.StationId)
-            .build()
+            val response: Response = client.newCall(request).await()
 
-        val response: Response = client.newCall(request).await()
-
-        return withContext(IO) { response.body()?.string() }
-
+            withContext(IO) { response.body()?.string() }
+        } catch (ex: Exception){
+            ""
+        }
     }
 
     private fun getStationIndexData(data: String?): Pair<String, String> {
@@ -101,18 +109,22 @@ class APIClient @Inject constructor(){
     }
 
     suspend fun getPositions(index: Int): String? {
+        try{
+            if(index == 0){
+                return null
+            }
 
-        if(index == 0){
-            return null
+            val request = Request.Builder()
+                .url(this.urlPositions + index)
+                .build()
+
+            val response: Response = client.newCall(request).await()
+
+            return withContext(IO) { response.body()?.string() }
         }
-
-        val request = Request.Builder()
-            .url(this.urlPositions + index)
-            .build()
-
-        val response: Response = client.newCall(request).await()
-
-        return withContext(IO) { response.body()?.string() }
+        catch(ex: Exception){
+            return ""
+        }
     }
 
     suspend fun getPositionsData(data: String?) : MutableList<PositionEntity> {
@@ -153,18 +165,22 @@ class APIClient @Inject constructor(){
     }
 
     private suspend fun getSensorValue(index: Int): String? {
+        try{
+            if(index == 0){
+                return null
+            }
 
-        if(index == 0){
-            return null
+            val request = Request.Builder()
+                .url(this.urlSensorValue + index)
+                .build()
+
+            val response: Response = client.newCall(request).await()
+
+            return withContext(IO) { response.body()?.string() }
         }
-
-        val request = Request.Builder()
-            .url(this.urlSensorValue + index)
-            .build()
-
-        val response: Response = client.newCall(request).await()
-
-        return withContext(IO) { response.body()?.string() }
+        catch(ex: Exception){
+            return ""
+        }
     }
 
     private fun getSensorValueData(data: String?): String?{
