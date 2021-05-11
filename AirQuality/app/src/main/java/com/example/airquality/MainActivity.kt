@@ -1,7 +1,8 @@
 package com.example.airquality
 
+import android.app.Notification
+import android.app.NotificationManager
 import android.app.job.JobInfo
-import android.app.job.JobInfo.BACKOFF_POLICY_LINEAR
 import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.content.Context
@@ -15,6 +16,7 @@ import android.text.TextWatcher
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.example.DaggerDependencies
 import com.example.apiclient.APIClient
@@ -33,6 +35,7 @@ import kotlinx.coroutines.Dispatchers.Main
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -166,7 +169,12 @@ class MainActivity : AppCompatActivity() {
 
         //Receiver list on screen
         val listItems: ArrayList<StationIndexEntity> = arrayListOf()
-        location = Location(this@MainActivity, {listItems -> refreshStationIndexView(listItems)}, listItems, true)
+        location = Location(
+            this@MainActivity,
+            { listItems -> refreshStationIndexView(listItems) },
+            listItems,
+            true
+        )
 
         CoroutineScope(Dispatchers.Default).launch {
 
@@ -182,17 +190,22 @@ class MainActivity : AppCompatActivity() {
         adapter = StationAdapter(this, listItems)
         stationList.adapter = adapter
 
+        var builder = Notification.Builder(this, "123")
+            .setSmallIcon(R.drawable.ic_baseline_wb_cloudy_24)
+            .setContentTitle("AirQuality")
+            .setContentText("Indeks asd dla ")
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        notificationManager.notify(123, builder.build())
+
         //start background job
-        if (sharedPreferences.getInt("jobStarted", 0) == 0){
-            sharedPreferences.edit().putInt("jobStarted", 1).apply()
-            val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-            val jobInfo = JobInfo.Builder(1, ComponentName(this, BJob::class.java))
-            val job = jobInfo.setPersisted(true)
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .setBackoffCriteria(30*60*1000, JobInfo.BACKOFF_POLICY_LINEAR)
-                .setPeriodic(30 * 60 * 1000).build()
-            jobScheduler.schedule(job)
-        }
+        val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        val jobInfo = JobInfo.Builder(1, ComponentName(this, BJob::class.java))
+        val job = jobInfo.setPersisted(true)
+            .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+            .setBackoffCriteria(20 * 60 * 1000, JobInfo.BACKOFF_POLICY_LINEAR)
+            .setPeriodic(20 * 60 * 1000).build()
+        jobScheduler.schedule(job)
     }
 
     private suspend fun refreshStationIndexView(listItems: ArrayList<StationIndexEntity>){
