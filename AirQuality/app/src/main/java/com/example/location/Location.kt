@@ -29,7 +29,7 @@ class Location : LocationListener {
         this.callUI = callUI
 
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager?
-        lm!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
+        lm!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 2f, this)
     }
 
     @SuppressLint("MissingPermission")
@@ -44,7 +44,7 @@ class Location : LocationListener {
         this.callUI = callUI
 
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager?
-        lm!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
+        lm!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 2f, this)
     }
 
     private fun getDistance(station: StationIndexEntity, context: Context) : Double {

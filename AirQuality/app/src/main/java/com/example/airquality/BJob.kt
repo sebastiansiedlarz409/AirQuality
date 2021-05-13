@@ -32,13 +32,6 @@ class BJob : JobService() {
         db = DataBase.getDbInstance(applicationContext)
 
         job = CoroutineScope(Dispatchers.Default).launch {
-            val sdf = SimpleDateFormat("dd/M/yyyy HH:mm:ss")
-            val currentDate = sdf.format(Date())
-
-            withContext(Main){
-                Toast.makeText(applicationContext, "Update "+currentDate, Toast.LENGTH_SHORT).show()
-            }
-
             dataManager.updateStationData(applicationContext)
 
             val stations = db.stationIndexDao().getAll()

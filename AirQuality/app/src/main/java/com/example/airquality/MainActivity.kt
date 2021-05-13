@@ -62,12 +62,6 @@ class MainActivity : AppCompatActivity() {
             101
         )
 
-        ActivityCompat.requestPermissions(
-            this@MainActivity,
-            Array(1) { android.Manifest.permission.RECEIVE_BOOT_COMPLETED },
-            102
-        )
-
         sharedPreferences = getSharedPreferences("AiqQualitySP", Context.MODE_PRIVATE)
 
         db = DataBase.getDbInstance(this)
@@ -203,8 +197,9 @@ class MainActivity : AppCompatActivity() {
         val jobInfo = JobInfo.Builder(1, ComponentName(this, BJob::class.java))
         val job = jobInfo.setPersisted(true)
             .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-            .setBackoffCriteria(20 * 60 * 1000, JobInfo.BACKOFF_POLICY_LINEAR)
-            .setPeriodic(20 * 60 * 1000).build()
+            .setBackoffCriteria(60 * 60 * 1000, JobInfo.BACKOFF_POLICY_LINEAR)
+            .setPeriodic(60 * 60 * 1000).build()
+        jobScheduler.cancel(1)
         jobScheduler.schedule(job)
     }
 
