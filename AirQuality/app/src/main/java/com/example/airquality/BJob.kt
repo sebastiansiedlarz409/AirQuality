@@ -1,7 +1,13 @@
 package com.example.airquality
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.job.JobParameters
 import android.app.job.JobService
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.util.Log
 import android.widget.Toast
@@ -24,12 +30,26 @@ class BJob : JobService() {
     private lateinit var location: Location
     private lateinit var job: Job
 
+    lateinit var notificationManager: NotificationManager
+    lateinit var notificationChannel: NotificationChannel
+    lateinit var builder: Notification.Builder
+    private val channelId = "AirQualityNotification"
+    private val description = "AirQuality notification channel"
+
     override fun onStartJob(params: JobParameters?): Boolean {
         this.params = params!!
 
         dataManager = DataManager()
         location = Location(applicationContext, false)
         db = DataBase.getDbInstance(applicationContext)
+
+        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationChannel = NotificationChannel(channelId, description, NotificationManager.IMPORTANCE_HIGH)
+        notificationChannel.enableVibration(false)
+        notificationManager.createNotificationChannel(notificationChannel)
+
+        val intent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         job = CoroutineScope(Dispatchers.Default).launch {
             dataManager.updateStationData(applicationContext)
@@ -49,29 +69,19 @@ class BJob : JobService() {
             }
 
             if(nearest != null){
-                withContext(Main){
-                    var builder = NotificationCompat.Builder(applicationContext, "123")
-                        .setSmallIcon(R.drawable.ic_baseline_wb_cloudy_24)
-                        .setContentTitle("AirQuality")
-                        .setContentText("Indeks " + nearest.Index + " dla " + nearest.Name)
-                        .setStyle(NotificationCompat.BigTextStyle()
-                            .bigText("Much longer text that cannot fit one line..."))
-                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    with(NotificationManagerCompat.from(applicationContext)) {
-                        notify(123, builder.build())
+                if(nearest.Index == "Umiarkowany" || nearest.Index == "Dostateczny" || nearest.Index == "Zły"
+                    || nearest.Index == "Bardzo zły" || nearest.Index == "Brak indeksu"){
+                    withContext(Main){
+                        builder = Notification.Builder(applicationContext, channelId)
+                            .setSmallIcon(R.drawable.ic_launcher_background)
+                            .setSmallIcon(R.drawable.ic_baseline_wb_cloudy_24)
+                            .setContentIntent(pendingIntent)
+                            .setContentTitle("AirQuality")
+                            .setContentText("Uwaga!!! Indeks " + nearest.Index + " dla " + nearest.Name + "!!!")
+                        with(NotificationManagerCompat.from(applicationContext)) {
+                            notify(123, builder.build())
+                        }
                     }
-                }
-            }
-            else{
-                var builder = NotificationCompat.Builder(applicationContext, "123")
-                    .setSmallIcon(R.drawable.ic_baseline_wb_cloudy_24)
-                    .setContentTitle("AirQuality")
-                    .setContentText("Indeks asd dla ")
-                    .setStyle(NotificationCompat.BigTextStyle()
-                        .bigText("Much longer text that cannot fit one line..."))
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                with(NotificationManagerCompat.from(applicationContext)) {
-                    notify(123, builder.build())
                 }
             }
 
