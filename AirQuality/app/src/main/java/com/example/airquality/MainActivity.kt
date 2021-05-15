@@ -203,8 +203,9 @@ class MainActivity : AppCompatActivity() {
             .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
             .setBackoffCriteria(60 * 60 * 1000, JobInfo.BACKOFF_POLICY_LINEAR)
             .setPeriodic(60 * 60 * 1000).build()
-        jobScheduler.cancel(1)
-        jobScheduler.schedule(job)
+        //jobScheduler.cancel(1)
+        if(jobScheduler.getPendingJob(1) == null)
+            jobScheduler.schedule(job)
     }
 
     private suspend fun refreshStationIndexView(listItems: ArrayList<StationIndexEntity>){

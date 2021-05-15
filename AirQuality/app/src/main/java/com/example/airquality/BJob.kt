@@ -66,6 +66,9 @@ class BJob : JobService() {
             }
             else{
                 nearest = location.getNearestStation(stations, applicationContext)
+                while(nearest == null){
+                    nearest = location.getNearestStation(stations, applicationContext)
+                }
             }
 
             if(nearest != null){
@@ -77,7 +80,7 @@ class BJob : JobService() {
                             .setSmallIcon(R.drawable.ic_baseline_wb_cloudy_24)
                             .setContentIntent(pendingIntent)
                             .setContentTitle("AirQuality")
-                            .setContentText("Uwaga!!! Indeks " + nearest.Index + " dla " + nearest.Name + "!!!")
+                            .setContentText("Uwaga!!! Indeks " + nearest.Index.toUpperCase() + " dla " + nearest.Name + "!!!")
                         with(NotificationManagerCompat.from(applicationContext)) {
                             notify(123, builder.build())
                         }
