@@ -11,7 +11,7 @@ import com.example.database.StationIndexEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.ArrayList
+import java.util.*
 
 class Location : LocationListener {
     private var callUI: Boolean = false
@@ -29,7 +29,8 @@ class Location : LocationListener {
         this.callUI = callUI
 
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager?
-        lm!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 2f, this)
+        //lm!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 2f, this)
+        lm!!.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, null)
     }
 
     @SuppressLint("MissingPermission")
@@ -44,7 +45,7 @@ class Location : LocationListener {
         this.callUI = callUI
 
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager?
-        lm!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 2f, this)
+        lm!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0.01f, this)
     }
 
     private fun getDistance(station: StationIndexEntity, context: Context) : Double {
@@ -69,6 +70,9 @@ class Location : LocationListener {
                 best = station
             }
         }
+
+        val sharedPreferences = context.getSharedPreferences("AiqQualitySP", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putInt("Nearest", best!!.StationId).apply()
 
         return best
     }

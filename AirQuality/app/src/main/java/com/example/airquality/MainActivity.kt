@@ -188,14 +188,6 @@ class MainActivity : AppCompatActivity() {
         adapter = StationAdapter(this, listItems)
         stationList.adapter = adapter
 
-        var builder = Notification.Builder(this, "123")
-            .setSmallIcon(R.drawable.ic_baseline_wb_cloudy_24)
-            .setContentTitle("AirQuality")
-            .setContentText("Indeks asd dla ")
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-
-        notificationManager.notify(123, builder.build())
-
         //start background job
         val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
         val jobInfo = JobInfo.Builder(1, ComponentName(this, BJob::class.java))

@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.job.JobParameters
 import android.app.job.JobService
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.util.Log
@@ -43,6 +44,9 @@ class BJob : JobService() {
         location = Location(applicationContext, false)
         db = DataBase.getDbInstance(applicationContext)
 
+        val sharedPreferences = applicationContext.getSharedPreferences("AiqQualitySP", Context.MODE_PRIVATE)
+        val nearestId = sharedPreferences.getInt("Nearest", 0)
+
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationChannel = NotificationChannel(channelId, description, NotificationManager.IMPORTANCE_HIGH)
         notificationChannel.enableVibration(false)
@@ -57,34 +61,26 @@ class BJob : JobService() {
             val stations = db.stationIndexDao().getAll()
 
             var nearest: StationIndexEntity? = null
-
-            if (ContextCompat.checkSelfPermission(
-                    applicationContext,
-                    android.Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED ){
-                //DO NOTHING
-            }
-            else{
-                nearest = location.getNearestStation(stations, applicationContext)
-                while(nearest == null){
-                    nearest = location.getNearestStation(stations, applicationContext)
+            for (st in stations){
+                if(st.StationId == nearestId){
+                    nearest = st
+                    break;
                 }
             }
 
             if(nearest != null){
-                if(nearest.Index == "Umiarkowany" || nearest.Index == "Dostateczny" || nearest.Index == "Zły"
+                if(nearest.Index == "Dostateczny" || nearest.Index == "Zły"
                     || nearest.Index == "Bardzo zły" || nearest.Index == "Brak indeksu"){
-                    withContext(Main){
-                        builder = Notification.Builder(applicationContext, channelId)
-                            .setSmallIcon(R.drawable.ic_launcher_background)
-                            .setSmallIcon(R.drawable.ic_baseline_wb_cloudy_24)
-                            .setContentIntent(pendingIntent)
-                            .setContentTitle("AirQuality")
-                            .setContentText("Uwaga!!! Indeks " + nearest.Index.toUpperCase() + " dla " + nearest.Name + "!!!")
-                        with(NotificationManagerCompat.from(applicationContext)) {
-                            notify(123, builder.build())
-                        }
-                    }
+
+                }
+                withContext(Main){
+                    builder = Notification.Builder(this@BJob, channelId)
+                        .setSmallIcon(R.drawable.ic_launcher_background)
+                        .setSmallIcon(R.drawable.ic_baseline_wb_cloudy_24)
+                        .setContentIntent(pendingIntent)
+                        .setContentTitle("AirQuality")
+                        .setContentText("Uwaga!!! Indeks " + nearest.Index.toUpperCase() + " dla " + nearest.Name + "!!!")
+                    notificationManager.notify(123, builder.build())
                 }
             }
 
