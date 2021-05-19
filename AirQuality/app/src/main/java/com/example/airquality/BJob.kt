@@ -71,16 +71,15 @@ class BJob : JobService() {
             if(nearest != null){
                 if(nearest.Index == "Dostateczny" || nearest.Index == "Zły"
                     || nearest.Index == "Bardzo zły" || nearest.Index == "Brak indeksu"){
-
-                }
-                withContext(Main){
-                    builder = Notification.Builder(this@BJob, channelId)
-                        .setSmallIcon(R.drawable.ic_launcher_background)
-                        .setSmallIcon(R.drawable.ic_baseline_wb_cloudy_24)
-                        .setContentIntent(pendingIntent)
-                        .setContentTitle("AirQuality")
-                        .setContentText("Uwaga!!! Indeks " + nearest.Index.toUpperCase() + " dla " + nearest.Name + "!!!")
-                    notificationManager.notify(123, builder.build())
+                    withContext(Main){
+                        builder = Notification.Builder(this@BJob, channelId)
+                            .setSmallIcon(R.drawable.ic_launcher_background)
+                            .setSmallIcon(R.drawable.ic_baseline_wb_cloudy_24)
+                            .setContentIntent(pendingIntent)
+                            .setContentTitle("AirQuality")
+                            .setContentText("Uwaga!!! Indeks " + nearest.Index.toUpperCase() + " dla " + nearest.Name + "!!!")
+                        notificationManager.notify(123, builder.build())
+                    }
                 }
             }
 
