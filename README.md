@@ -1,5 +1,5 @@
 # AirQuality
-Simple android app showing air quality in Poland. It's written for fun and to learn a new language.
+Simple android app showing air quality in Poland. An old project from college.
 
 ## Technologies
 
